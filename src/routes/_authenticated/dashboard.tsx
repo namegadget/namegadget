@@ -29,7 +29,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
-const REGISTRARS = ["Namecheap", "GoDaddy", "Cloudflare", "Porkbun", "Dynadot", "Google Domains", "Name.com", "Gandi", "Tucows", "Network Solutions", "MarkMonitor", "Other"];
+
 
 function daysUntil(dateStr: string) {
   const d = new Date(dateStr).getTime();
