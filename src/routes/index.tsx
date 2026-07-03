@@ -612,5 +612,3 @@ function ComparePremiumHeader() {
   );
 }
 
-/* Unused imports kept for potential future sections */
-void TrendingUp; void Zap;
