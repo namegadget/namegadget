@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
+import { Route as AuthenticatedGadgetLiveRouteImport } from './routes/_authenticated/gadget-live'
 import { Route as AuthenticatedGadgetAiRouteImport } from './routes/_authenticated/gadget-ai'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
@@ -34,6 +35,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedPortfolioRoute = AuthenticatedPortfolioRouteImport.update({
   id: '/portfolio',
   path: '/portfolio',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGadgetLiveRoute = AuthenticatedGadgetLiveRouteImport.update({
+  id: '/gadget-live',
+  path: '/gadget-live',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedGadgetAiRoute = AuthenticatedGadgetAiRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/gadget-ai': typeof AuthenticatedGadgetAiRoute
+  '/gadget-live': typeof AuthenticatedGadgetLiveRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
 }
 export interface FileRoutesByTo {
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/gadget-ai': typeof AuthenticatedGadgetAiRoute
+  '/gadget-live': typeof AuthenticatedGadgetLiveRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
 }
 export interface FileRoutesById {
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/gadget-ai': typeof AuthenticatedGadgetAiRoute
+  '/_authenticated/gadget-live': typeof AuthenticatedGadgetLiveRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
 }
 export interface FileRouteTypes {
@@ -86,9 +95,17 @@ export interface FileRouteTypes {
     | '/account'
     | '/dashboard'
     | '/gadget-ai'
+    | '/gadget-live'
     | '/portfolio'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/account' | '/dashboard' | '/gadget-ai' | '/portfolio'
+  to:
+    | '/'
+    | '/auth'
+    | '/account'
+    | '/dashboard'
+    | '/gadget-ai'
+    | '/gadget-live'
+    | '/portfolio'
   id:
     | '__root__'
     | '/'
@@ -97,6 +114,7 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/_authenticated/dashboard'
     | '/_authenticated/gadget-ai'
+    | '/_authenticated/gadget-live'
     | '/_authenticated/portfolio'
   fileRoutesById: FileRoutesById
 }
@@ -136,6 +154,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPortfolioRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/gadget-live': {
+      id: '/_authenticated/gadget-live'
+      path: '/gadget-live'
+      fullPath: '/gadget-live'
+      preLoaderRoute: typeof AuthenticatedGadgetLiveRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/gadget-ai': {
       id: '/_authenticated/gadget-ai'
       path: '/gadget-ai'
@@ -164,6 +189,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedGadgetAiRoute: typeof AuthenticatedGadgetAiRoute
+  AuthenticatedGadgetLiveRoute: typeof AuthenticatedGadgetLiveRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
 }
 
@@ -171,6 +197,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedGadgetAiRoute: AuthenticatedGadgetAiRoute,
+  AuthenticatedGadgetLiveRoute: AuthenticatedGadgetLiveRoute,
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
 }
 
