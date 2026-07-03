@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Zap, TrendingUp, ShieldCheck, ArrowRight } from "lucide-react";
+import logo from "@/assets/logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
   component: Landing,
