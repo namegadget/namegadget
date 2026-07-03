@@ -528,6 +528,7 @@ export const LANDER_TEMPLATES: Template[] = [
   { id: "orbit",      label: "Orbit / Blob",       group: "Animated",     Comp: OrbitLander },
   { id: "marquee",    label: "Editorial Marquee",  group: "Animated",     Comp: MarqueeLander },
   { id: "glitch",     label: "Neon Glitch",        group: "Animated",     Comp: GlitchLander },
+  ...EXTRA_LANDERS,
 ];
 
 export function LanderGallery({ domain, val }: LanderProps) {
