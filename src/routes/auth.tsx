@@ -61,8 +61,8 @@ function AuthPage() {
     });
   }, [step]);
 
-  async function sendOtp(e: React.FormEvent) {
-    e.preventDefault();
+  async function sendOtp(e?: React.FormEvent) {
+    e?.preventDefault();
     if (!email) return;
     setLoading(true);
     try {
@@ -266,7 +266,7 @@ function AuthPage() {
                 <p className="auth-el mt-5 text-center text-[11px] text-muted-foreground">
                   Didn't receive it?{" "}
                   <button
-                    onClick={sendOtp as unknown as () => void}
+                    onClick={() => sendOtp()}
                     className="text-primary hover:underline font-medium"
                     disabled={loading}
                   >
