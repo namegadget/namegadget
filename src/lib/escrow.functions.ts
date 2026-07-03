@@ -67,7 +67,7 @@ export const createEscrowTransaction = createServerFn({ method: "POST" })
       ],
     };
 
-    const res = await fetch(`${BASE()}/2017-09-01/transaction`, {
+    const res = await fetch(`${BASE}/2017-09-01/transaction`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
