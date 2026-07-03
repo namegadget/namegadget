@@ -6,8 +6,12 @@ import {
   Search, Plus, TrendingUp, AlertTriangle, Users2,
   Sparkles, X, Radio, MessagesSquare, LayoutTemplate, Globe2,
   ShieldCheck, Send, Copy, ExternalLink, Loader2, Activity,
+  RefreshCw, Layers,
 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { LanderGallery } from "@/components/landers";
+import { lookupRdap } from "@/lib/rdap";
+import { appraiseDomain, analyzeTechProfile, generateLivePulse } from "@/lib/gadget.functions";
 
 type Domain = {
   id: string;
@@ -25,7 +29,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
-const REGISTRARS = ["Namecheap", "GoDaddy", "Cloudflare", "Porkbun", "Dynadot"];
+const REGISTRARS = ["Namecheap", "GoDaddy", "Cloudflare", "Porkbun", "Dynadot", "Google Domains", "Name.com", "Gandi", "Tucows", "Network Solutions", "MarkMonitor", "Other"];
 
 function daysUntil(dateStr: string) {
   const d = new Date(dateStr).getTime();
@@ -53,7 +57,6 @@ function Dashboard() {
     setLoading(false);
   }
 
-
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return domains;
@@ -66,7 +69,6 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Brand hero page-header (matches identity system) */}
       <header className="relative overflow-hidden bg-sidebar text-white">
         <div className="absolute -top-40 -right-40 h-[560px] w-[560px] rounded-full pointer-events-none"
              style={{ background: "radial-gradient(circle, rgba(4,120,87,0.22) 0%, transparent 65%)" }} />
@@ -90,7 +92,6 @@ function Dashboard() {
         </div>
       </header>
 
-      {/* Toolbar */}
       <div className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-8 h-14 flex items-center gap-4">
           <div className="flex-1 max-w-md relative">
@@ -107,17 +108,13 @@ function Dashboard() {
         </div>
       </div>
 
-
-
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard label="Total Assets" value={totalAssets} icon={Globe2} accent="cyan" hint="Domains under management" />
           <StatCard label="Critical Expirations" value={critical} icon={AlertTriangle} accent="danger" hint="< 90 days remaining" />
           <StatCard label="Total Traffic" value={totalTraffic.toLocaleString()} icon={TrendingUp} accent="sky" hint="Aggregated visitors" />
         </div>
 
-        {/* Portfolio */}
         <div className="mt-8 rounded-2xl border border-border bg-card/60 backdrop-blur overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-border">
             <div>
@@ -259,6 +256,27 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
     return d.toISOString().slice(0, 10);
   });
   const [saving, setSaving] = useState(false);
+  const [rdapLoading, setRdapLoading] = useState(false);
+  const [rdapNote, setRdapNote] = useState<string | null>(null);
+
+  async function runRdap(name: string) {
+    const clean = name.trim().toLowerCase();
+    if (!clean.includes(".")) return;
+    setRdapLoading(true);
+    setRdapNote(null);
+    const r = await lookupRdap(clean);
+    setRdapLoading(false);
+    if (!r) {
+      setRdapNote("No RDAP record found — enter manually.");
+      return;
+    }
+    if (r.registrar) {
+      const match = REGISTRARS.find((x) => x.toLowerCase() === r.registrar!.toLowerCase());
+      setRegistrar(match ?? "Other");
+    }
+    if (r.expiryDate) setExpiry(r.expiryDate.slice(0, 10));
+    setRdapNote(`RDAP auto-filled${r.registrar ? ` · ${r.registrar}` : ""}${r.expiryDate ? ` · expires ${r.expiryDate.slice(0, 10)}` : ""}`);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -286,14 +304,29 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-lg font-semibold">Add New Asset</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Insert a domain into your portfolio.</p>
+            <p className="text-xs text-muted-foreground mt-0.5">RDAP auto-fills registrar & expiry.</p>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
         </div>
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Domain Name</label>
-            <input value={domainName} onChange={(e) => setDomainName(e.target.value)} required placeholder="example.com" className="mt-1 w-full rounded-md border border-input bg-input/40 px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30" />
+            <div className="mt-1 relative">
+              <input
+                value={domainName}
+                onChange={(e) => setDomainName(e.target.value)}
+                onBlur={(e) => runRdap(e.target.value)}
+                required
+                placeholder="example.com"
+                className="w-full rounded-md border border-input bg-input/40 px-3 py-2 pr-9 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+              />
+              {rdapLoading && <Loader2 className="h-4 w-4 animate-spin absolute right-3 top-1/2 -translate-y-1/2 text-primary" />}
+            </div>
+            {rdapNote && (
+              <p className={`mt-1.5 text-[11px] ${rdapNote.startsWith("No") ? "text-muted-foreground" : "text-primary"}`}>
+                {rdapNote}
+              </p>
+            )}
           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Registrar</label>
@@ -317,7 +350,7 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
 
 /* ============ Right Drawer: gadget suite ============ */
 
-type Tab = "gadget" | "live" | "deal" | "lander";
+type Tab = "gadget" | "tech" | "live" | "deal" | "lander";
 
 function GadgetDrawer({ domain, onClose }: { domain: Domain; onClose: () => void }) {
   const [tab, setTab] = useState<Tab>("gadget");
@@ -342,8 +375,9 @@ function GadgetDrawer({ domain, onClose }: { domain: Domain; onClose: () => void
         </div>
 
         <div className="px-6 pt-4">
-          <div className="inline-flex rounded-lg border border-border bg-background/60 p-1 text-xs">
-            <TabBtn active={tab === "gadget"} onClick={() => setTab("gadget")} icon={Sparkles}>gadget</TabBtn>
+          <div className="inline-flex flex-wrap rounded-lg border border-border bg-background/60 p-1 text-xs">
+            <TabBtn active={tab === "gadget"} onClick={() => setTab("gadget")} icon={Sparkles}>gadget AI</TabBtn>
+            <TabBtn active={tab === "tech"} onClick={() => setTab("tech")} icon={Layers}>Tech Profile</TabBtn>
             <TabBtn active={tab === "live"} onClick={() => setTab("live")} icon={Radio}>gadget+ Live</TabBtn>
             <TabBtn active={tab === "deal"} onClick={() => setTab("deal")} icon={MessagesSquare}>Deal Room</TabBtn>
             <TabBtn active={tab === "lander"} onClick={() => setTab("lander")} icon={LayoutTemplate}>Lander</TabBtn>
@@ -352,6 +386,7 @@ function GadgetDrawer({ domain, onClose }: { domain: Domain; onClose: () => void
 
         <div className="p-6">
           {tab === "gadget" && <GadgetView domain={domain} />}
+          {tab === "tech" && <TechView domain={domain} />}
           {tab === "live" && <LiveView domain={domain} />}
           {tab === "deal" && <DealRoomView domain={domain} />}
           {tab === "lander" && <LanderView domain={domain} />}
@@ -374,86 +409,100 @@ function TabBtn({ active, onClick, icon: Icon, children }: any) {
   );
 }
 
-/* -- Simulated AI helpers (deterministic per domain) -- */
-function hashStr(s: string) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
-function appraise(domain: string) {
-  const h = hashStr(domain);
-  const base = 2000 + (h % 40000);
-  return { low: base, high: Math.round(base * (1.15 + ((h % 40) / 100))) };
-}
-function leadsFor(domain: string) {
-  const industries = ["FinTech", "SaaS", "Health", "Crypto", "AI Infra", "Retail", "Logistics"];
-  const suffixes = ["Labs", "Global", "Capital", "Ventures", "Group", "Systems"];
-  const h = hashStr(domain);
-  const name = domain.split(".")[0];
-  return Array.from({ length: 4 }).map((_, i) => {
-    const seed = h + i * 97;
-    return {
-      company: `${name.charAt(0).toUpperCase() + name.slice(1)} ${suffixes[seed % suffixes.length]}`,
-      industry: industries[(seed >> 2) % industries.length],
-      match: 78 + ((seed >> 3) % 20),
-    };
-  });
-}
+/* ============ REAL AI Views ============ */
+
+type AppraisalData = {
+  low: number; high: number; confidence: number; rationale: string;
+  comparableSales: { name: string; price: number; year: number }[];
+  leads: { company: string; industry: string; match: number; reason: string }[];
+  geography: { region: string; pct: number }[];
+};
 
 function GadgetView({ domain }: { domain: Domain }) {
-  const val = appraise(domain.domain_name);
-  const leads = leadsFor(domain.domain_name);
-  const geo = [
-    { region: "North America", pct: 42 }, { region: "Europe", pct: 28 },
-    { region: "Asia Pacific", pct: 22 }, { region: "Other", pct: 8 },
-  ];
+  const appraise = useServerFn(appraiseDomain);
+  const [data, setData] = useState<AppraisalData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function run() {
+    setLoading(true); setError(null);
+    const r = await appraise({ data: { domain: domain.domain_name } });
+    setLoading(false);
+    if (r.ok) setData(r);
+    else setError(r.error);
+  }
+
+  useEffect(() => { void run(); }, [domain.domain_name]);
+
+  if (loading) return <AiLoading label="Analyzing domain with Gadget AI..." />;
+  if (error || !data) return <AiError message={error ?? "Failed to load"} onRetry={run} />;
+
+  const meterPct = Math.min(100, data.confidence);
 
   return (
     <div className="space-y-6">
-      {/* Appraisal */}
       <section className="rounded-xl border border-border bg-background/40 p-5">
         <div className="flex items-center justify-between">
           <h4 className="font-semibold flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> AI Appraisal</h4>
-          <span className="text-xs text-muted-foreground">Premium valuation model</span>
+          <button onClick={run} className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1">
+            <RefreshCw className="h-3 w-3" /> Re-analyze
+          </button>
         </div>
         <p className="mt-4 text-3xl font-bold gradient-brand bg-clip-text text-transparent">
-          ${val.low.toLocaleString()} – ${val.high.toLocaleString()}
+          ${data.low.toLocaleString()} – ${data.high.toLocaleString()}
         </p>
-        <div className="mt-4 h-2 rounded-full bg-muted overflow-hidden">
-          <div className="h-full gradient-brand" style={{ width: `${Math.min(100, 45 + (val.high % 40))}%` }} />
+        <p className="text-xs text-muted-foreground mt-1">Confidence {data.confidence}%</p>
+        <div className="mt-3 h-2 rounded-full bg-muted overflow-hidden">
+          <div className="h-full gradient-brand" style={{ width: `${meterPct}%` }} />
         </div>
-        <div className="mt-2 flex justify-between text-[10px] uppercase tracking-wider text-muted-foreground">
-          <span>Conservative</span><span>Aggressive</span>
-        </div>
+        <p className="mt-4 text-sm text-foreground/80 leading-relaxed">{data.rationale}</p>
       </section>
 
-      {/* Leads */}
-      <section>
-        <h4 className="font-semibold flex items-center gap-2 mb-3"><Users2 className="h-4 w-4 text-primary" /> Outbound Corporate Leads</h4>
-        <div className="space-y-2">
-          {leads.map((l) => (
-            <div key={l.company} className="rounded-lg border border-border bg-background/40 p-4 flex items-center justify-between hover:border-primary/40 transition">
-              <div>
-                <p className="font-semibold">{l.company}</p>
-                <p className="text-xs text-muted-foreground">{l.industry}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-lg font-bold text-primary">{l.match}%</p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Match</p>
-              </div>
+      <section className="rounded-xl border border-border bg-background/40 p-5">
+        <h4 className="font-semibold mb-3">Comparable Sales</h4>
+        <div className="space-y-1.5">
+          {data.comparableSales.map((c, i) => (
+            <div key={i} className="flex items-center justify-between text-sm py-1.5 border-b border-border/60 last:border-0">
+              <span className="font-mono">{c.name}</span>
+              <span className="text-muted-foreground text-xs">{c.year}</span>
+              <span className="font-semibold text-primary">${c.price.toLocaleString()}</span>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Geo */}
+      <section>
+        <h4 className="font-semibold flex items-center gap-2 mb-3"><Users2 className="h-4 w-4 text-primary" /> Outbound Corporate Leads</h4>
+        <div className="space-y-2">
+          {data.leads.map((l, i) => (
+            <div key={i} className="rounded-lg border border-border bg-background/40 p-4 hover:border-primary/40 transition">
+              <div className="flex items-center justify-between">
+                <div className="min-w-0">
+                  <p className="font-semibold truncate">{l.company}</p>
+                  <p className="text-xs text-muted-foreground">{l.industry}</p>
+                </div>
+                <div className="text-right pl-3">
+                  <p className="text-lg font-bold text-primary">{l.match}%</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Match</p>
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-foreground/70">{l.reason}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="rounded-xl border border-border bg-background/40 p-5">
-        <h4 className="font-semibold flex items-center gap-2 mb-4"><Globe2 className="h-4 w-4 text-primary" /> Traffic Geography</h4>
+        <h4 className="font-semibold flex items-center gap-2 mb-4"><Globe2 className="h-4 w-4 text-primary" /> Buyer-Intent Geography</h4>
         <div className="space-y-3">
-          {geo.map((g) => (
+          {data.geography.map((g) => (
             <div key={g.region}>
               <div className="flex justify-between text-xs mb-1">
                 <span>{g.region}</span>
                 <span className="text-muted-foreground">{g.pct}%</span>
               </div>
               <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                <div className="h-full gradient-brand" style={{ width: `${g.pct * 2}%` }} />
+                <div className="h-full gradient-brand" style={{ width: `${Math.min(100, g.pct)}%` }} />
               </div>
             </div>
           ))}
@@ -463,54 +512,130 @@ function GadgetView({ domain }: { domain: Domain }) {
   );
 }
 
+type TechData = { categories: { name: string; items: { name: string; description: string }[] }[]; summary: string; fetched: boolean };
+
+function TechView({ domain }: { domain: Domain }) {
+  const analyze = useServerFn(analyzeTechProfile);
+  const [data, setData] = useState<TechData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function run() {
+    setLoading(true); setError(null);
+    const r = await analyze({ data: { domain: domain.domain_name } });
+    setLoading(false);
+    if (r.ok) setData(r as TechData);
+    else setError(r.error);
+  }
+
+  useEffect(() => { void run(); }, [domain.domain_name]);
+
+  if (loading) return <AiLoading label="Scanning site & profiling tech stack..." />;
+  if (error || !data) return <AiError message={error ?? "Failed"} onRetry={run} />;
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-border bg-background/40 p-5">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="font-semibold flex items-center gap-2"><Layers className="h-4 w-4 text-primary" /> Tech Profile</h4>
+          <button onClick={run} className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1">
+            <RefreshCw className="h-3 w-3" /> Rescan
+          </button>
+        </div>
+        <p className="text-sm text-foreground/80">{data.summary}</p>
+        {!data.fetched && (
+          <p className="mt-2 text-[11px] text-warning">Homepage unreachable — inferred from domain signals only.</p>
+        )}
+      </div>
+
+      {data.categories.map((cat) => (
+        <div key={cat.name} className="rounded-xl border border-border bg-background/40 p-4">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">{cat.name}</p>
+          <div className="space-y-2">
+            {cat.items.map((it, i) => (
+              <div key={i} className="flex items-start gap-3 py-1.5 border-b border-border/40 last:border-0">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">{it.name}</p>
+                  <p className="text-xs text-muted-foreground">{it.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+type Pulse = { id: number; kind: "spike" | "drop" | "signal" | "buyer"; headline: string; delta: string; time: string };
+
 function LiveView({ domain }: { domain: Domain }) {
-  const [events, setEvents] = useState<{ id: number; type: string; msg: string; time: string }[]>([]);
+  const gen = useServerFn(generateLivePulse);
+  const [events, setEvents] = useState<Pulse[]>([]);
+  const [live, setLive] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  async function tick() {
+    setLoading(true);
+    const r = await gen({ data: { domain: domain.domain_name } });
+    setLoading(false);
+    if (!r.ok) return;
+    const now = new Date().toLocaleTimeString();
+    setEvents((prev) => [
+      ...r.events.map((e, i) => ({ ...e, id: Date.now() + i, time: now })),
+      ...prev,
+    ].slice(0, 20));
+  }
 
   useEffect(() => {
-    let id = 0;
-    const kinds = [
-      { type: "Search Spike", msg: (n: string) => `+${20 + Math.floor(Math.random() * 80)}% search volume on "${n.split(".")[0]}"` },
-      { type: "Brand Filing", msg: (n: string) => `New trademark filing near "${n.split(".")[0]}" detected` },
-      { type: "Valuation Shift", msg: () => `Micro-market valuation +$${(Math.random() * 500 + 100).toFixed(0)}` },
-      { type: "Buyer Signal", msg: (n: string) => `Enterprise lookup on ${n} from US-East` },
-    ];
-    const tick = () => {
-      const k = kinds[Math.floor(Math.random() * kinds.length)];
-      const ev = { id: ++id, type: k.type, msg: k.msg(domain.domain_name), time: new Date().toLocaleTimeString() };
-      setEvents((prev) => [ev, ...prev].slice(0, 12));
-    };
-    tick();
-    const t = setInterval(tick, 2200);
+    setEvents([]);
+    if (!live) return;
+    void tick();
+    const t = setInterval(tick, 15000);
     return () => clearInterval(t);
-  }, [domain.domain_name]);
+  }, [domain.domain_name, live]);
 
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-success/40 bg-success/5 p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="relative flex h-3 w-3">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75 animate-ping" />
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-success" />
+            {live && <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75 animate-ping" />}
+            <span className={`relative inline-flex rounded-full h-3 w-3 ${live ? "bg-success" : "bg-muted-foreground"}`} />
           </span>
           <div>
-            <p className="text-sm font-semibold text-success uppercase tracking-wider">LIVE</p>
-            <p className="text-xs text-muted-foreground">Streaming market triggers for {domain.domain_name}</p>
+            <p className="text-sm font-semibold text-success uppercase tracking-wider">{live ? "LIVE · AI" : "PAUSED"}</p>
+            <p className="text-xs text-muted-foreground">AI-generated market triggers for {domain.domain_name}</p>
           </div>
         </div>
-        <Activity className="h-5 w-5 text-success" />
+        <div className="flex items-center gap-2">
+          {loading && <Loader2 className="h-4 w-4 animate-spin text-success" />}
+          <button onClick={() => setLive((v) => !v)} className="text-xs font-mono uppercase text-muted-foreground hover:text-foreground">
+            {live ? "Pause" : "Resume"}
+          </button>
+        </div>
       </div>
 
       <div className="rounded-xl border border-border bg-background/40 divide-y divide-border max-h-[480px] overflow-y-auto">
         {events.length === 0 && (
-          <p className="p-6 text-sm text-muted-foreground text-center">Connecting to live feed...</p>
+          <p className="p-6 text-sm text-muted-foreground text-center flex items-center justify-center gap-2">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Contacting AI market feed...
+          </p>
         )}
         {events.map((e) => (
           <div key={e.id} className="p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-            <span className="mt-1 inline-flex rounded-full border border-primary/40 bg-primary/10 text-primary px-2 py-0.5 text-[10px] uppercase tracking-wider">{e.type}</span>
+            <span className={`mt-0.5 inline-flex rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider ${
+              e.kind === "spike" ? "border-primary/40 bg-primary/10 text-primary"
+              : e.kind === "drop" ? "border-danger/40 bg-danger/10 text-danger"
+              : e.kind === "buyer" ? "border-warning/40 bg-warning/10 text-warning"
+              : "border-accent/40 bg-accent/10 text-accent"
+            }`}>{e.kind}</span>
             <div className="flex-1 min-w-0">
-              <p className="text-sm">{e.msg}</p>
+              <p className="text-sm">{e.headline}</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">{e.time}</p>
             </div>
+            <span className="text-xs font-mono font-semibold">{e.delta}</span>
           </div>
         ))}
       </div>
@@ -518,14 +643,33 @@ function LiveView({ domain }: { domain: Domain }) {
   );
 }
 
+function AiLoading({ label }: { label: string }) {
+  return (
+    <div className="p-10 text-center text-sm text-muted-foreground flex flex-col items-center gap-3">
+      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      {label}
+    </div>
+  );
+}
+function AiError({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="rounded-xl border border-danger/40 bg-danger/5 p-6 text-center">
+      <p className="text-sm text-danger font-semibold">AI request failed</p>
+      <p className="mt-1 text-xs text-muted-foreground">{message}</p>
+      <button onClick={onRetry} className="mt-4 inline-flex items-center gap-2 text-xs font-mono uppercase border border-border rounded-md px-3 py-1.5 hover:border-primary">
+        <RefreshCw className="h-3 w-3" /> Retry
+      </button>
+    </div>
+  );
+}
+
 function DealRoomView({ domain }: { domain: Domain }) {
-  const val = appraise(domain.domain_name);
   const [messages, setMessages] = useState([
     { from: "buyer" as const, text: `Interested in ${domain.domain_name}. Serious offer.`, time: "10:42" },
     { from: "seller" as const, text: "Thanks — appreciate the direct approach. What's your range?", time: "10:44" },
   ]);
-  const [offer, setOffer] = useState(String(val.low));
-  const [counter, setCounter] = useState(String(Math.round((val.low + val.high) / 2)));
+  const [offer, setOffer] = useState("5000");
+  const [counter, setCounter] = useState("12000");
   const [msg, setMsg] = useState("");
 
   function send() {
@@ -548,7 +692,6 @@ function DealRoomView({ domain }: { domain: Domain }) {
         <span className="rounded-full border border-success/40 bg-success/10 text-success px-2 py-0.5 text-xs font-semibold">0% broker fees</span>
       </div>
 
-      {/* Chat */}
       <div className="rounded-xl border border-border bg-background/40 p-4">
         <div className="space-y-2 max-h-56 overflow-y-auto">
           {messages.map((m, i) => (
@@ -572,7 +715,6 @@ function DealRoomView({ domain }: { domain: Domain }) {
         </div>
       </div>
 
-      {/* Offers */}
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl border border-border bg-background/40 p-4">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Buyer Offer</p>
@@ -595,7 +737,6 @@ function DealRoomView({ domain }: { domain: Domain }) {
         Accept Terms — 0% Commission
       </button>
 
-      {/* Checkout providers */}
       <div>
         <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Instant Checkout Link Generator</p>
         <div className="grid grid-cols-3 gap-2">
@@ -612,9 +753,10 @@ function DealRoomView({ domain }: { domain: Domain }) {
 }
 
 function LanderView({ domain }: { domain: Domain }) {
-  const val = appraise(domain.domain_name);
   const [copied, setCopied] = useState(false);
   const url = `https://${domain.domain_name}`;
+  const h = Math.abs([...domain.domain_name].reduce((a, c) => a * 31 + c.charCodeAt(0), 0));
+  const val = { low: 2000 + (h % 20000), high: 15000 + (h % 40000) };
 
   return (
     <div className="space-y-4">
