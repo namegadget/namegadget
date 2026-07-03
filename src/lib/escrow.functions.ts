@@ -3,8 +3,8 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // The provided API key is a PRODUCTION Escrow.com key (verified against /customer/me).
-// Sandbox rejects it with 401. Use production endpoint.
-const BASE = () => process.env.ESCROW_API_BASE || "https://api.escrow.com";
+// Sandbox rejects it with 401 — always route to production.
+const BASE = "https://api.escrow.com";
 
 function authHeader() {
   const email = process.env.ESCROW_API_EMAIL;
