@@ -26,7 +26,6 @@ function daysUntil(dateStr: string) {
 }
 
 function AccountPage() {
-  const navigate = useNavigate();
   const [user, setUser] = useState<{ email: string; id: string; created_at: string } | null>(null);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,10 +55,6 @@ function AccountPage() {
     return { total, critical, traffic, portfolioValue, forSale, sold };
   }, [domains]);
 
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
-  }
 
   async function handlePasswordUpdate(e: React.FormEvent) {
     e.preventDefault();
