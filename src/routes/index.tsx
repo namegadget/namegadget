@@ -230,7 +230,7 @@ function BloatChart({ inView }: { inView: boolean }) {
               <LabelList
                 dataKey="fee"
                 position="right"
-                formatter={(v: number) => (v === 0 ? "0% — flat" : `${v}%`)}
+                formatter={(v: unknown) => (Number(v) === 0 ? "0% — flat" : `${v}%`)}
                 style={{ fill: "var(--foreground)", fontSize: 12, fontWeight: 600 }}
               />
             </Bar>
