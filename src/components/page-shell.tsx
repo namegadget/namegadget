@@ -25,7 +25,7 @@ export function PageShell({
               "radial-gradient(60% 60% at 20% 0%, rgba(16,185,129,0.18) 0%, transparent 60%), radial-gradient(40% 40% at 90% 10%, rgba(4,120,87,0.15) 0%, transparent 60%)",
           }}
         />
-        <div className="relative px-8 pt-10 pb-8">
+        <div className="relative px-4 sm:px-6 md:px-8 pt-8 md:pt-10 pb-6 md:pb-8">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-emerald-400/80">
               {eyebrow}
@@ -35,22 +35,22 @@ export function PageShell({
               NameGadget
             </span>
           </div>
-          <div className="flex items-start justify-between gap-6 flex-wrap">
-            <div className="flex items-start gap-4 max-w-2xl">
-              <div className="h-11 w-11 rounded-xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center flex-shrink-0">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:justify-between">
+            <div className="flex min-w-0 items-start gap-3 sm:gap-4 max-w-2xl">
+              <div className="h-10 w-10 md:h-11 md:w-11 shrink-0 rounded-xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center">
                 <Icon className="h-5 w-5 text-emerald-400" />
               </div>
-              <div>
-                <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
-                <p className="text-sm text-white/50 mt-1.5 leading-relaxed">{description}</p>
+              <div className="min-w-0">
+                <h1 className="truncate text-2xl md:text-3xl font-semibold tracking-tight">{title}</h1>
+                <p className="text-xs sm:text-sm text-white/50 mt-1.5 leading-relaxed">{description}</p>
               </div>
             </div>
-            {actions}
+            {actions && <div className="col-span-2 sm:col-auto">{actions}</div>}
           </div>
         </div>
       </div>
 
-      <div className="p-8">{children}</div>
+      <div className="p-4 sm:p-6 md:p-8">{children}</div>
     </div>
   );
 }

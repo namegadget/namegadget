@@ -1,7 +1,7 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard, Globe2, Radio, MessagesSquare, LayoutTemplate,
-  Sparkles, User, LogOut, Search,
+  Sparkles, User, LogOut, Search, Menu, X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
@@ -30,28 +30,35 @@ export function BrandSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
   }, []);
+
+  // Close drawer on route change
+  useEffect(() => { setOpen(false); }, [pathname]);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
 
-  return (
-    <aside className="fixed left-0 top-0 bottom-0 w-[240px] bg-sidebar text-sidebar-foreground z-40 flex flex-col border-r border-sidebar-border">
+  const sidebarInner = (
+    <>
       {/* Brand mark */}
-      <div className="px-5 pt-7 pb-5 border-b border-sidebar-border">
-        <Link to="/dashboard" className="flex items-center gap-2.5 mb-1 group">
+      <div className="px-5 pt-7 pb-5 border-b border-sidebar-border flex items-center justify-between">
+        <Link to="/dashboard" className="flex items-center gap-2.5 group">
           <img src={darkLogo.url} alt="NameGadget" className="h-8 w-auto" />
         </Link>
-        <span className="text-[10px] font-mono uppercase tracking-[0.1em] text-white/20">
-          NameGadget
-        </span>
+        <button
+          onClick={() => setOpen(false)}
+          className="md:hidden p-1.5 rounded-md text-white/50 hover:text-white hover:bg-white/5"
+          aria-label="Close menu"
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
-
 
       {/* Nav groups */}
       <nav className="flex-1 overflow-y-auto px-3 py-3">
@@ -94,7 +101,44 @@ export function BrandSidebar() {
           v1.0 · Live
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile top bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-sidebar border-b border-sidebar-border flex items-center justify-between px-4">
+        <Link to="/dashboard" className="flex items-center gap-2">
+          <img src={darkLogo.url} alt="NameGadget" className="h-6 w-auto" />
+        </Link>
+        <button
+          onClick={() => setOpen(true)}
+          className="p-2 rounded-md text-white/70 hover:text-white hover:bg-white/5"
+          aria-label="Open menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Backdrop (mobile) */}
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+        />
+      )}
+
+      {/* Sidebar (desktop static, mobile drawer) */}
+      <aside
+        className={[
+          "fixed left-0 top-0 bottom-0 w-[260px] md:w-[240px] bg-sidebar text-sidebar-foreground z-50 md:z-40 flex flex-col border-r border-sidebar-border",
+          "transform transition-transform duration-300 ease-out",
+          open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+        ].join(" ")}
+      >
+        {sidebarInner}
+      </aside>
+    </>
   );
 }
 

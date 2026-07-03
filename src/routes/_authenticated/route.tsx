@@ -16,7 +16,7 @@ function AuthenticatedLayout() {
   return (
     <div className="min-h-screen bg-background">
       <BrandSidebar />
-      <div className="ml-[240px] min-h-screen">
+      <div className="md:ml-[240px] pt-14 md:pt-0 min-h-screen">
         <Outlet />
       </div>
     </div>
