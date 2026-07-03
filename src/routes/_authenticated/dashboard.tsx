@@ -248,7 +248,29 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
   );
 }
 
+type BulkRow = {
+  domain: string;
+  status: "pending" | "fetching" | "ready" | "saving" | "done" | "error";
+  registrar?: string;
+  expiry?: string;
+  note?: string;
+};
+
+function parseDomainList(text: string): string[] {
+  return Array.from(
+    new Set(
+      text
+        .split(/[\s,;\n\r\t]+/)
+        .map((s) => s.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, ""))
+        .filter((s) => s.includes(".") && /^[a-z0-9.-]+$/i.test(s)),
+    ),
+  );
+}
+
 function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const [mode, setMode] = useState<"single" | "bulk">("single");
+
+  // Single
   const [domainName, setDomainName] = useState("");
   const [registrar, setRegistrar] = useState("Namecheap");
   const [expiry, setExpiry] = useState(() => {
@@ -259,17 +281,18 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
   const [rdapLoading, setRdapLoading] = useState(false);
   const [rdapNote, setRdapNote] = useState<string | null>(null);
 
+  // Bulk
+  const [bulkText, setBulkText] = useState("");
+  const [bulkRows, setBulkRows] = useState<BulkRow[]>([]);
+  const [bulkRunning, setBulkRunning] = useState(false);
+
   async function runRdap(name: string) {
     const clean = name.trim().toLowerCase();
     if (!clean.includes(".")) return;
-    setRdapLoading(true);
-    setRdapNote(null);
+    setRdapLoading(true); setRdapNote(null);
     const r = await lookupRdap(clean);
     setRdapLoading(false);
-    if (!r) {
-      setRdapNote("No RDAP record found — enter manually.");
-      return;
-    }
+    if (!r) { setRdapNote("No RDAP record found — enter manually."); return; }
     if (r.registrar) {
       const match = REGISTRARS.find((x) => x.toLowerCase() === r.registrar!.toLowerCase());
       setRegistrar(match ?? "Other");
@@ -298,51 +321,203 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
     onCreated();
   }
 
+  function loadBulkFromText() {
+    const list = parseDomainList(bulkText);
+    if (!list.length) { toast.error("No valid domains found"); return; }
+    setBulkRows(list.map((d) => ({ domain: d, status: "pending" })));
+  }
+
+  async function onCsvFile(f: File) {
+    const text = await f.text();
+    setBulkText(text);
+    const list = parseDomainList(text);
+    if (!list.length) { toast.error("No valid domains found in file"); return; }
+    setBulkRows(list.map((d) => ({ domain: d, status: "pending" })));
+    toast.success(`${list.length} domain${list.length === 1 ? "" : "s"} parsed`);
+  }
+
+  async function runBulkImport() {
+    if (!bulkRows.length) return;
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) { toast.error("Not signed in"); return; }
+    setBulkRunning(true);
+
+    // Process sequentially with small parallelism (3 at a time)
+    const rows = [...bulkRows];
+    const CONC = 3;
+    let idx = 0;
+
+    async function processOne(i: number) {
+      setBulkRows((prev) => prev.map((r, j) => j === i ? { ...r, status: "fetching" } : r));
+      const r = await lookupRdap(rows[i].domain);
+      const registrarName = r?.registrar
+        ? (REGISTRARS.find((x) => x.toLowerCase() === r.registrar!.toLowerCase()) ?? "Other")
+        : "Other";
+      const expiryIso = r?.expiryDate
+        ? new Date(r.expiryDate).toISOString()
+        : new Date(Date.now() + 365 * 86400000).toISOString();
+
+      setBulkRows((prev) => prev.map((row, j) => j === i ? {
+        ...row, status: "saving", registrar: registrarName, expiry: expiryIso.slice(0, 10),
+        note: r ? "RDAP" : "no RDAP · default expiry",
+      } : row));
+
+      const { error } = await supabase.from("domains").insert({
+        user_id: userData.user!.id,
+        domain_name: rows[i].domain,
+        registrar: registrarName,
+        expiry_date: expiryIso,
+        visitor_count: Math.floor(Math.random() * 5000),
+        status: "Parked",
+        appraised_value: null,
+      });
+
+      setBulkRows((prev) => prev.map((row, j) => j === i ? {
+        ...row, status: error ? "error" : "done", note: error ? error.message : row.note,
+      } : row));
+    }
+
+    const workers = Array.from({ length: Math.min(CONC, rows.length) }).map(async () => {
+      while (idx < rows.length) {
+        const my = idx++;
+        await processOne(my);
+      }
+    });
+    await Promise.all(workers);
+
+    setBulkRunning(false);
+    const okCount = rows.length; // Count success from state below
+    toast.success(`Bulk import complete · ${okCount} processed`);
+    onCreated();
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/70 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl glow-cyan animate-in zoom-in-95 duration-200">
+      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-xl rounded-2xl border border-border bg-card p-6 shadow-2xl glow-cyan animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-lg font-semibold">Add New Asset</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">RDAP auto-fills registrar & expiry.</p>
+            <p className="text-xs text-muted-foreground mt-0.5">RDAP auto-fills registrar & expiry for every domain.</p>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
         </div>
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Domain Name</label>
-            <div className="mt-1 relative">
-              <input
-                value={domainName}
-                onChange={(e) => setDomainName(e.target.value)}
-                onBlur={(e) => runRdap(e.target.value)}
-                required
-                placeholder="example.com"
-                className="w-full rounded-md border border-input bg-input/40 px-3 py-2 pr-9 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
-              />
-              {rdapLoading && <Loader2 className="h-4 w-4 animate-spin absolute right-3 top-1/2 -translate-y-1/2 text-primary" />}
+
+        <div className="mt-5 grid grid-cols-2 rounded-md border border-border p-0.5 bg-muted/40 text-xs font-mono uppercase tracking-widest">
+          <button onClick={() => setMode("single")} className={`py-1.5 rounded transition ${mode === "single" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>Single</button>
+          <button onClick={() => setMode("bulk")} className={`py-1.5 rounded transition ${mode === "bulk" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>Bulk · CSV</button>
+        </div>
+
+        {mode === "single" ? (
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Domain Name</label>
+              <div className="mt-1 relative">
+                <input
+                  value={domainName}
+                  onChange={(e) => setDomainName(e.target.value)}
+                  onBlur={(e) => runRdap(e.target.value)}
+                  required
+                  placeholder="example.com"
+                  className="w-full rounded-md border border-input bg-input/40 px-3 py-2 pr-9 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+                />
+                {rdapLoading && <Loader2 className="h-4 w-4 animate-spin absolute right-3 top-1/2 -translate-y-1/2 text-primary" />}
+              </div>
+              {rdapNote && (
+                <p className={`mt-1.5 text-[11px] ${rdapNote.startsWith("No") ? "text-muted-foreground" : "text-primary"}`}>{rdapNote}</p>
+              )}
             </div>
-            {rdapNote && (
-              <p className={`mt-1.5 text-[11px] ${rdapNote.startsWith("No") ? "text-muted-foreground" : "text-primary"}`}>
-                {rdapNote}
-              </p>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Registrar</label>
+              <select value={registrar} onChange={(e) => setRegistrar(e.target.value)} className="mt-1 w-full rounded-md border border-input bg-input/40 px-3 py-2 text-sm outline-none focus:border-primary">
+                {REGISTRARS.map((r) => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Expiry Date</label>
+              <input type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} required className="mt-1 w-full rounded-md border border-input bg-input/40 px-3 py-2 text-sm outline-none focus:border-primary" />
+            </div>
+            <button type="submit" disabled={saving} className="w-full inline-flex items-center justify-center gap-2 rounded-md gradient-brand text-primary-foreground px-4 py-2.5 text-sm font-semibold glow-cyan disabled:opacity-60">
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              Add to Portfolio
+            </button>
+          </form>
+        ) : (
+          <div className="mt-6 space-y-4">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Paste domains</label>
+              <textarea
+                value={bulkText}
+                onChange={(e) => setBulkText(e.target.value)}
+                placeholder={"example.com\nfoo.io\nbar.co, baz.dev"}
+                rows={5}
+                className="mt-1 w-full rounded-md border border-input bg-input/40 px-3 py-2 text-sm font-mono outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 resize-none"
+              />
+              <p className="mt-1 text-[11px] text-muted-foreground">One per line, or separated by commas/spaces.</p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2">
+              <label className="flex-1 inline-flex items-center justify-center gap-2 rounded-md border border-dashed border-border bg-muted/30 px-3 py-2 text-xs font-mono uppercase tracking-widest cursor-pointer hover:border-primary/60 hover:bg-primary/5 transition">
+                <input
+                  type="file"
+                  accept=".csv,.txt,text/csv,text/plain"
+                  className="hidden"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) void onCsvFile(f); }}
+                />
+                Upload CSV / TXT
+              </label>
+              <button
+                onClick={loadBulkFromText}
+                disabled={!bulkText.trim()}
+                className="flex-1 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs font-mono uppercase tracking-widest hover:border-primary/60 hover:bg-primary/5 disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                Parse list
+              </button>
+            </div>
+
+            {bulkRows.length > 0 && (
+              <div className="rounded-lg border border-border bg-background/50 max-h-64 overflow-y-auto">
+                <table className="w-full text-xs">
+                  <thead className="text-[10px] uppercase tracking-widest text-muted-foreground bg-muted/40 sticky top-0">
+                    <tr>
+                      <th className="text-left px-3 py-2">Domain</th>
+                      <th className="text-left px-3 py-2">Registrar</th>
+                      <th className="text-left px-3 py-2">Expiry</th>
+                      <th className="text-left px-3 py-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bulkRows.map((r, i) => (
+                      <tr key={i} className="border-t border-border">
+                        <td className="px-3 py-1.5 font-mono">{r.domain}</td>
+                        <td className="px-3 py-1.5 text-muted-foreground">{r.registrar ?? "—"}</td>
+                        <td className="px-3 py-1.5 text-muted-foreground">{r.expiry ?? "—"}</td>
+                        <td className="px-3 py-1.5">
+                          <span className={
+                            r.status === "done" ? "text-success" :
+                            r.status === "error" ? "text-danger" :
+                            r.status === "pending" ? "text-muted-foreground" :
+                            "text-primary"
+                          }>
+                            {r.status}{r.note ? ` · ${r.note}` : ""}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
+
+            <button
+              onClick={runBulkImport}
+              disabled={!bulkRows.length || bulkRunning}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-md gradient-brand text-primary-foreground px-4 py-2.5 text-sm font-semibold glow-cyan disabled:opacity-60"
+            >
+              {bulkRunning && <Loader2 className="h-4 w-4 animate-spin" />}
+              {bulkRunning ? "Fetching & importing…" : `Import ${bulkRows.length || ""} domain${bulkRows.length === 1 ? "" : "s"}`}
+            </button>
           </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Registrar</label>
-            <select value={registrar} onChange={(e) => setRegistrar(e.target.value)} className="mt-1 w-full rounded-md border border-input bg-input/40 px-3 py-2 text-sm outline-none focus:border-primary">
-              {REGISTRARS.map((r) => <option key={r} value={r}>{r}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Expiry Date</label>
-            <input type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} required className="mt-1 w-full rounded-md border border-input bg-input/40 px-3 py-2 text-sm outline-none focus:border-primary" />
-          </div>
-          <button type="submit" disabled={saving} className="w-full inline-flex items-center justify-center gap-2 rounded-md gradient-brand text-primary-foreground px-4 py-2.5 text-sm font-semibold glow-cyan disabled:opacity-60">
-            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-            Add to Portfolio
-          </button>
-        </form>
+        )}
       </div>
     </div>
   );
