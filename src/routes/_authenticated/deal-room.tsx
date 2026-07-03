@@ -239,7 +239,7 @@ function DealDetail({
       >
         <div className="sticky top-0 bg-card/95 backdrop-blur border-b border-border px-4 sm:px-6 py-4 flex items-center justify-between z-10 gap-3">
           <div className="min-w-0">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground truncate">Deal · {deal.buyer}</p>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground truncate">Deal · {deal.buyer} · {deal.buyerEmail}</p>
             <h3 className="text-lg sm:text-xl font-bold truncate">{deal.domain}</h3>
           </div>
           <button onClick={onClose} className="p-2 rounded-md hover:bg-muted shrink-0"><X className="h-4 w-4" /></button>
@@ -314,7 +314,15 @@ function DealDetail({
               <span className="ml-auto rounded-full border border-success/40 bg-success/10 text-success px-2 py-0.5 text-[10px] font-semibold">0% fees</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {["Escrow", "Atompay", "Safepay"].map((p) => (
+              <button
+                onClick={onEscrow}
+                disabled={deal.escrow?.status === "creating"}
+                className="rounded-lg border border-primary/40 bg-primary/5 hover:border-primary text-primary py-2 text-sm font-medium inline-flex items-center justify-center gap-1 disabled:opacity-60"
+              >
+                {deal.escrow?.status === "creating" && <Loader2 className="h-3 w-3 animate-spin" />}
+                {deal.escrow?.status === "created" ? "Escrow ✓" : "Escrow"}
+              </button>
+              {["Atompay", "Safepay"].map((p) => (
                 <button
                   key={p}
                   onClick={() => toast.success(`${p} — Frictionless Integration Generated Successfully.`)}
@@ -324,6 +332,18 @@ function DealDetail({
                 </button>
               ))}
             </div>
+
+            {deal.escrow?.status === "created" && deal.escrow.landingUrl && (
+              <div className="mt-3 rounded-lg border border-success/40 bg-success/10 p-3 text-xs">
+                <p className="font-semibold text-success mb-1">Escrow #{deal.escrow.transactionId} — auto-generated</p>
+                <p className="text-muted-foreground mb-2">Broker: NameGadget · 0% commission · Parties auto-invited by email.</p>
+                <a href={deal.escrow.landingUrl} target="_blank" rel="noreferrer" className="font-mono text-primary underline break-all">{deal.escrow.landingUrl}</a>
+              </div>
+            )}
+            {deal.escrow?.status === "error" && (
+              <div className="mt-3 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">{deal.escrow.error}</div>
+            )}
+
             <div className="mt-3 flex items-center gap-2">
               <code className="flex-1 text-xs bg-muted rounded px-2 py-1.5 truncate">
                 namegadget.deal/{deal.id}
