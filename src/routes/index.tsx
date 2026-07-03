@@ -15,6 +15,7 @@ import {
   BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, LabelList,
 } from "recharts";
 import logo from "@/assets/logo.png.asset.json";
+import founderImg from "@/assets/founder.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
   component: Landing,
