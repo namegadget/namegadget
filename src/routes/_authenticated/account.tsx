@@ -83,24 +83,16 @@ function AccountPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center gap-4">
-          <Link to="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm">
-            <ArrowLeft className="h-4 w-4" /> Back
+      <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-8 h-14 flex items-center gap-4">
+          <Link to="/dashboard" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground text-xs font-mono uppercase tracking-widest">
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to Portfolio
           </Link>
-          <div className="mx-4 h-6 w-px bg-border" />
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg gradient-brand glow-cyan flex items-center justify-center">
-              <Zap className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="font-bold tracking-tight text-glow">NameGadget</span>
-            <span className="ml-2 text-xs uppercase tracking-widest text-muted-foreground font-mono">/ Account</span>
-          </div>
-          <button onClick={handleSignOut} className="ml-auto inline-flex items-center gap-2 rounded-md border border-border bg-card/60 px-3 py-1.5 text-xs hover:bg-muted transition">
-            <LogOut className="h-3.5 w-3.5" /> Sign out
-          </button>
+          <span className="ml-auto text-xs uppercase tracking-widest text-muted-foreground font-mono">/ Account</span>
         </div>
       </header>
+
+
 
       <main className="max-w-6xl mx-auto px-6 py-10 space-y-8">
         {loading ? (
