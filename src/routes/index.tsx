@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Zap, TrendingUp, ShieldCheck, ArrowRight } from "lucide-react";
+import logo from "@/assets/logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -31,11 +32,9 @@ function Landing() {
 
       <nav className="relative z-10 flex items-center justify-between px-6 md:px-12 py-6">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg gradient-brand glow-cyan flex items-center justify-center">
-            <Zap className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="text-lg font-bold tracking-tight text-glow">NameGadget</span>
+          <img src={logo.url} alt="NameGadget" className="h-8 w-auto" />
         </div>
+
         <button
           onClick={() => navigate({ to: "/auth" })}
           className="rounded-md border border-border bg-card/60 backdrop-blur px-4 py-2 text-sm font-medium hover:bg-card"
