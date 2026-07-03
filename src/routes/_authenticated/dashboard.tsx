@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -90,16 +90,21 @@ function Dashboard() {
           </div>
 
           <div className="ml-auto flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
+            <Link
+              to="/account"
+              className="hidden md:flex items-center gap-2 text-xs text-muted-foreground rounded-full pl-1 pr-3 py-1 hover:bg-muted transition"
+              title="Account dashboard"
+            >
               <div className="h-8 w-8 rounded-full gradient-brand flex items-center justify-center text-primary-foreground font-bold text-sm">
                 {email.slice(0, 1).toUpperCase() || "U"}
               </div>
               <span className="max-w-[140px] truncate">{email}</span>
-            </div>
+            </Link>
             <button onClick={handleSignOut} className="p-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground" title="Sign out">
               <LogOut className="h-4 w-4" />
             </button>
           </div>
+
         </div>
       </header>
 
