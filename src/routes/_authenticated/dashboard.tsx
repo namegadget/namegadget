@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { LanderGallery } from "@/components/landers";
-import { lookupRdap } from "@/lib/rdap";
+import { enrichDomain, normalizeDomain, type DomainEnrichment } from "@/lib/domain-enrich";
 import { appraiseDomain, analyzeTechProfile, generateLivePulse } from "@/lib/gadget.functions";
 
 type Domain = {
@@ -29,7 +29,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
-const REGISTRARS = ["Namecheap", "GoDaddy", "Cloudflare", "Porkbun", "Dynadot", "Google Domains", "Name.com", "Gandi", "Tucows", "Network Solutions", "MarkMonitor", "Other"];
+
 
 function daysUntil(dateStr: string) {
   const d = new Date(dateStr).getTime();
@@ -250,21 +250,31 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 
 type BulkRow = {
   domain: string;
-  status: "pending" | "fetching" | "ready" | "saving" | "done" | "error";
+  status: "pending" | "fetching" | "saving" | "done" | "error";
   registrar?: string;
   expiry?: string;
+  traffic?: number;
   note?: string;
 };
 
 function parseDomainList(text: string): string[] {
-  return Array.from(
-    new Set(
-      text
-        .split(/[\s,;\n\r\t]+/)
-        .map((s) => s.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, ""))
-        .filter((s) => s.includes(".") && /^[a-z0-9.-]+$/i.test(s)),
-    ),
-  );
+  return Array.from(new Set(
+    text.split(/[\s,;\n\r\t]+/)
+      .map((s) => normalizeDomain(s))
+      .filter((s) => s.includes(".") && /^[a-z0-9.-]+$/i.test(s)),
+  ));
+}
+
+async function insertEnriched(userId: string, e: DomainEnrichment) {
+  return supabase.from("domains").insert({
+    user_id: userId,
+    domain_name: e.domain,
+    registrar: e.registrar,
+    expiry_date: e.expiryIso,
+    visitor_count: e.visitorEstimate,
+    status: "Parked",
+    appraised_value: null,
+  });
 }
 
 function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
@@ -272,52 +282,40 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
 
   // Single
   const [domainName, setDomainName] = useState("");
-  const [registrar, setRegistrar] = useState("Namecheap");
-  const [expiry, setExpiry] = useState(() => {
-    const d = new Date(); d.setFullYear(d.getFullYear() + 1);
-    return d.toISOString().slice(0, 10);
-  });
+  const [enrich, setEnrich] = useState<DomainEnrichment | null>(null);
+  const [enriching, setEnriching] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [rdapLoading, setRdapLoading] = useState(false);
-  const [rdapNote, setRdapNote] = useState<string | null>(null);
 
   // Bulk
   const [bulkText, setBulkText] = useState("");
   const [bulkRows, setBulkRows] = useState<BulkRow[]>([]);
   const [bulkRunning, setBulkRunning] = useState(false);
 
-  async function runRdap(name: string) {
-    const clean = name.trim().toLowerCase();
-    if (!clean.includes(".")) return;
-    setRdapLoading(true); setRdapNote(null);
-    const r = await lookupRdap(clean);
-    setRdapLoading(false);
-    if (!r) { setRdapNote("No RDAP record found — enter manually."); return; }
-    if (r.registrar) {
-      const match = REGISTRARS.find((x) => x.toLowerCase() === r.registrar!.toLowerCase());
-      setRegistrar(match ?? "Other");
-    }
-    if (r.expiryDate) setExpiry(r.expiryDate.slice(0, 10));
-    setRdapNote(`RDAP auto-filled${r.registrar ? ` · ${r.registrar}` : ""}${r.expiryDate ? ` · expires ${r.expiryDate.slice(0, 10)}` : ""}`);
+  async function runEnrich(name: string) {
+    const clean = normalizeDomain(name);
+    if (!clean.includes(".")) { setEnrich(null); return; }
+    setEnriching(true);
+    const r = await enrichDomain(clean);
+    setEnrich(r);
+    setEnriching(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    let data = enrich;
+    if (!data || data.domain !== normalizeDomain(domainName)) {
+      setEnriching(true);
+      data = await enrichDomain(domainName);
+      setEnrich(data);
+      setEnriching(false);
+    }
     setSaving(true);
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) { toast.error("Not signed in"); setSaving(false); return; }
-    const { error } = await supabase.from("domains").insert({
-      user_id: userData.user.id,
-      domain_name: domainName.trim().toLowerCase(),
-      registrar,
-      expiry_date: new Date(expiry).toISOString(),
-      visitor_count: Math.floor(Math.random() * 5000),
-      status: "Parked",
-      appraised_value: null,
-    });
+    const { error } = await insertEnriched(userData.user.id, data);
     setSaving(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Asset added to portfolio");
+    toast.success(`${data.domain} added · ${data.source}`);
     onCreated();
   }
 
@@ -342,52 +340,32 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
     if (!userData.user) { toast.error("Not signed in"); return; }
     setBulkRunning(true);
 
-    // Process sequentially with small parallelism (3 at a time)
     const rows = [...bulkRows];
     const CONC = 3;
     let idx = 0;
 
     async function processOne(i: number) {
       setBulkRows((prev) => prev.map((r, j) => j === i ? { ...r, status: "fetching" } : r));
-      const r = await lookupRdap(rows[i].domain);
-      const registrarName = r?.registrar
-        ? (REGISTRARS.find((x) => x.toLowerCase() === r.registrar!.toLowerCase()) ?? "Other")
-        : "Other";
-      const expiryIso = r?.expiryDate
-        ? new Date(r.expiryDate).toISOString()
-        : new Date(Date.now() + 365 * 86400000).toISOString();
-
+      const e = await enrichDomain(rows[i].domain);
       setBulkRows((prev) => prev.map((row, j) => j === i ? {
-        ...row, status: "saving", registrar: registrarName, expiry: expiryIso.slice(0, 10),
-        note: r ? "RDAP" : "no RDAP · default expiry",
+        ...row, status: "saving",
+        registrar: e.registrar, expiry: e.expiryIso.slice(0, 10),
+        traffic: e.visitorEstimate, note: e.source,
       } : row));
-
-      const { error } = await supabase.from("domains").insert({
-        user_id: userData.user!.id,
-        domain_name: rows[i].domain,
-        registrar: registrarName,
-        expiry_date: expiryIso,
-        visitor_count: Math.floor(Math.random() * 5000),
-        status: "Parked",
-        appraised_value: null,
-      });
-
+      const { error } = await insertEnriched(userData.user!.id, e);
       setBulkRows((prev) => prev.map((row, j) => j === i ? {
-        ...row, status: error ? "error" : "done", note: error ? error.message : row.note,
+        ...row, status: error ? "error" : "done",
+        note: error ? error.message : e.note,
       } : row));
     }
 
     const workers = Array.from({ length: Math.min(CONC, rows.length) }).map(async () => {
-      while (idx < rows.length) {
-        const my = idx++;
-        await processOne(my);
-      }
+      while (idx < rows.length) { const my = idx++; await processOne(my); }
     });
     await Promise.all(workers);
 
     setBulkRunning(false);
-    const okCount = rows.length; // Count success from state below
-    toast.success(`Bulk import complete · ${okCount} processed`);
+    toast.success(`Import complete · ${rows.length} processed`);
     onCreated();
   }
 
@@ -397,7 +375,7 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-lg font-semibold">Add New Asset</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">RDAP auto-fills registrar & expiry for every domain.</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Just the domain — registrar, expiry, DNS and traffic are fetched automatically.</p>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
         </div>
@@ -410,35 +388,38 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
         {mode === "single" ? (
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Domain Name</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Domain</label>
               <div className="mt-1 relative">
                 <input
                   value={domainName}
-                  onChange={(e) => setDomainName(e.target.value)}
-                  onBlur={(e) => runRdap(e.target.value)}
+                  onChange={(e) => { setDomainName(e.target.value); setEnrich(null); }}
+                  onBlur={(e) => runEnrich(e.target.value)}
                   required
+                  autoFocus
                   placeholder="example.com"
                   className="w-full rounded-md border border-input bg-input/40 px-3 py-2 pr-9 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
                 />
-                {rdapLoading && <Loader2 className="h-4 w-4 animate-spin absolute right-3 top-1/2 -translate-y-1/2 text-primary" />}
+                {enriching && <Loader2 className="h-4 w-4 animate-spin absolute right-3 top-1/2 -translate-y-1/2 text-primary" />}
               </div>
-              {rdapNote && (
-                <p className={`mt-1.5 text-[11px] ${rdapNote.startsWith("No") ? "text-muted-foreground" : "text-primary"}`}>{rdapNote}</p>
-              )}
             </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Registrar</label>
-              <select value={registrar} onChange={(e) => setRegistrar(e.target.value)} className="mt-1 w-full rounded-md border border-input bg-input/40 px-3 py-2 text-sm outline-none focus:border-primary">
-                {REGISTRARS.map((r) => <option key={r} value={r}>{r}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Expiry Date</label>
-              <input type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} required className="mt-1 w-full rounded-md border border-input bg-input/40 px-3 py-2 text-sm outline-none focus:border-primary" />
-            </div>
-            <button type="submit" disabled={saving} className="w-full inline-flex items-center justify-center gap-2 rounded-md gradient-brand text-primary-foreground px-4 py-2.5 text-sm font-semibold glow-cyan disabled:opacity-60">
-              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              Add to Portfolio
+
+            {enrich && (
+              <div className="rounded-lg border border-border bg-background/50 p-3 space-y-2 text-xs">
+                <div className="grid grid-cols-2 gap-2">
+                  <FactRow label="Registrar" value={enrich.registrar} />
+                  <FactRow label="Expires" value={enrich.expiryIso.slice(0, 10)} />
+                  <FactRow label="Created" value={enrich.createdIso?.slice(0, 10) ?? "—"} />
+                  <FactRow label="Live" value={enrich.hasA ? "yes" : "no"} />
+                  <FactRow label="Mail (MX)" value={enrich.hasMx ? "yes" : "no"} />
+                  <FactRow label="Est. traffic" value={enrich.visitorEstimate.toLocaleString()} />
+                </div>
+                <p className="text-[11px] text-primary font-mono">{enrich.note}</p>
+              </div>
+            )}
+
+            <button type="submit" disabled={saving || enriching} className="w-full inline-flex items-center justify-center gap-2 rounded-md gradient-brand text-primary-foreground px-4 py-2.5 text-sm font-semibold glow-cyan disabled:opacity-60">
+              {(saving || enriching) && <Loader2 className="h-4 w-4 animate-spin" />}
+              {enriching ? "Fetching…" : saving ? "Saving…" : "Add to Portfolio"}
             </button>
           </form>
         ) : (
@@ -482,6 +463,7 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
                       <th className="text-left px-3 py-2">Domain</th>
                       <th className="text-left px-3 py-2">Registrar</th>
                       <th className="text-left px-3 py-2">Expiry</th>
+                      <th className="text-right px-3 py-2">Traffic</th>
                       <th className="text-left px-3 py-2">Status</th>
                     </tr>
                   </thead>
@@ -491,6 +473,7 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
                         <td className="px-3 py-1.5 font-mono">{r.domain}</td>
                         <td className="px-3 py-1.5 text-muted-foreground">{r.registrar ?? "—"}</td>
                         <td className="px-3 py-1.5 text-muted-foreground">{r.expiry ?? "—"}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-muted-foreground">{r.traffic?.toLocaleString() ?? "—"}</td>
                         <td className="px-3 py-1.5">
                           <span className={
                             r.status === "done" ? "text-success" :
@@ -522,6 +505,16 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
     </div>
   );
 }
+
+function FactRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-2 rounded border border-border/60 bg-card/60 px-2 py-1">
+      <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{label}</span>
+      <span className="font-medium truncate">{value}</span>
+    </div>
+  );
+}
+
 
 /* ============ Right Drawer: gadget suite ============ */
 
