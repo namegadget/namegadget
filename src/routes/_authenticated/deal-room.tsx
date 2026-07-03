@@ -34,21 +34,21 @@ type Deal = {
 const STAGES: Stage[] = ["Inbound", "Negotiating", "Agreed", "Closed"];
 
 const SEED: Deal[] = [
-  { id: "d1", domain: "quantum.dev", buyer: "Sequoia Labs", offer: 8000, counter: 14500, stage: "Negotiating", updated: "10:29",
+  { id: "d1", domain: "quantum.dev", buyer: "Sequoia Labs", buyerEmail: "deals@sequoialabs.vc", offer: 8000, counter: 14500, stage: "Negotiating", updated: "10:29",
     messages: [
       { from: "buyer", text: "Opening at $8,000.", time: "10:22" },
       { from: "seller", text: "Counter at $14,500 — comparable sales support this.", time: "10:24" },
       { from: "buyer", text: "$11,000 firm.", time: "10:29" },
     ] },
-  { id: "d2", domain: "aiagent.io", buyer: "Anthropic Corp", offer: 22000, stage: "Inbound", updated: "09:55",
+  { id: "d2", domain: "aiagent.io", buyer: "Anthropic Corp", buyerEmail: "acquisitions@anthropic.com", offer: 22000, stage: "Inbound", updated: "09:55",
     messages: [{ from: "buyer", text: "We'd like to acquire aiagent.io. Opening bid $22k.", time: "09:55" }] },
-  { id: "d3", domain: "neuralcore.ai", buyer: "OpenAI Research", offer: 45000, counter: 55000, stage: "Agreed", updated: "Yesterday",
+  { id: "d3", domain: "neuralcore.ai", buyer: "OpenAI Research", buyerEmail: "domains@openai.com", offer: 45000, counter: 55000, stage: "Agreed", updated: "Yesterday",
     messages: [
       { from: "buyer", text: "$45k final?", time: "Yesterday" },
       { from: "seller", text: "$55k firm. Escrow ready.", time: "Yesterday" },
       { from: "buyer", text: "Accepted. Proceeding via Escrow.com.", time: "Yesterday" },
     ] },
-  { id: "d4", domain: "fintechly.com", buyer: "Stripe Ventures", offer: 32000, stage: "Closed", updated: "3d ago",
+  { id: "d4", domain: "fintechly.com", buyer: "Stripe Ventures", buyerEmail: "ma@stripe.com", offer: 32000, stage: "Closed", updated: "3d ago",
     messages: [{ from: "buyer", text: "Deal closed. Wire sent.", time: "3d ago" }] },
 ];
 
@@ -83,12 +83,48 @@ function DealRoomPage() {
   function addDeal() {
     const domain = prompt("Domain for new deal?");
     if (!domain) return;
+    const buyerEmail = prompt("Buyer email (they'll be added to Escrow automatically)?") || "buyer@example.com";
     const id = `d${Date.now()}`;
     setDeals((ds) => [
-      { id, domain, buyer: "New buyer", offer: 0, stage: "Inbound", messages: [], updated: "just now" },
+      { id, domain, buyer: buyerEmail.split("@")[0], buyerEmail, offer: 0, stage: "Inbound", messages: [], updated: "just now" },
       ...ds,
     ]);
     setOpenId(id);
+  }
+
+  // Auto-generate Escrow transaction when a deal enters "Agreed".
+  const createEscrow = useServerFn(createEscrowTransaction);
+  async function autoEscrow(deal: Deal) {
+    if (deal.escrow?.status === "creating" || deal.escrow?.status === "created") return;
+    const amount = deal.counter ?? deal.offer;
+    if (!amount) return;
+    update(deal.id, { escrow: { status: "creating" } });
+    toast.info(`Generating Escrow transaction for ${deal.domain}…`);
+    try {
+      const res = await createEscrow({
+        data: { domain: deal.domain, amount, buyerEmail: deal.buyerEmail },
+      });
+      if (res.ok) {
+        update(deal.id, {
+          escrow: { status: "created", transactionId: String(res.transactionId), landingUrl: res.landingUrl },
+        });
+        toast.success(`Escrow #${res.transactionId} created — 0% commission, NameGadget as broker.`);
+      } else {
+        update(deal.id, { escrow: { status: "error", error: res.error } });
+        toast.error(`Escrow failed (${res.status}): ${res.error.slice(0, 120)}`);
+      }
+    } catch (e: any) {
+      update(deal.id, { escrow: { status: "error", error: e.message } });
+      toast.error(e.message);
+    }
+  }
+
+  function moveWithEscrow(id: string, stage: Stage) {
+    move(id, stage);
+    if (stage === "Agreed") {
+      const d = deals.find((x) => x.id === id);
+      if (d) void autoEscrow({ ...d, stage });
+    }
   }
 
   return (
