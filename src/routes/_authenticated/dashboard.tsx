@@ -618,7 +618,7 @@ function LanderView({ domain }: { domain: Domain }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h4 className="font-semibold flex items-center gap-2"><LayoutTemplate className="h-4 w-4 text-primary" /> Motion Lander Preview</h4>
+        <h4 className="font-semibold flex items-center gap-2"><LayoutTemplate className="h-4 w-4 text-primary" /> Lander Templates</h4>
         <button
           onClick={() => { navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
           className="text-xs inline-flex items-center gap-1.5 rounded-md border border-border bg-background/60 px-2.5 py-1 hover:border-primary/50"
@@ -627,46 +627,10 @@ function LanderView({ domain }: { domain: Domain }) {
         </button>
       </div>
 
-      <div className="rounded-2xl border border-border bg-background overflow-hidden">
-        <div className="h-8 border-b border-border flex items-center gap-1.5 px-3 bg-card">
-          <span className="h-2.5 w-2.5 rounded-full bg-danger/60" />
-          <span className="h-2.5 w-2.5 rounded-full bg-warning/60" />
-          <span className="h-2.5 w-2.5 rounded-full bg-success/60" />
-          <span className="ml-3 text-[10px] text-muted-foreground truncate">{url}</span>
-        </div>
-        <div className="relative bg-grid p-10 text-center min-h-[420px] flex flex-col items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none [background:radial-gradient(circle_at_50%_20%,color-mix(in_oklab,var(--cyan)_18%,transparent),transparent_60%)]" />
+      <LanderGallery domain={domain.domain_name} val={val} />
 
-          <div className="relative animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="inline-flex items-center gap-2 rounded-full border border-success/40 bg-success/10 text-success px-3 py-1 text-xs font-semibold">
-              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse-glow" />
-              Premium domain available
-            </div>
-            <h1 className="mt-5 text-4xl font-bold text-glow">{domain.domain_name}</h1>
-            <p className="mt-2 text-sm text-muted-foreground max-w-md">
-              A category-defining name. Instant credibility, unmatched memorability.
-            </p>
-
-            <div className="mt-6 grid grid-cols-3 gap-2 text-xs">
-              {[["47", "days left"], ["12", "watchers"], [`$${(val.low / 1000).toFixed(1)}k`, "min offer"]].map(([v, l]) => (
-                <div key={l} className="rounded-lg border border-border bg-card/70 backdrop-blur p-2">
-                  <p className="text-lg font-bold text-primary">{v}</p>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{l}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 flex items-center gap-2">
-              <input placeholder="Make an offer ($)" className="rounded-md border border-input bg-input/40 px-3 py-2 text-sm outline-none focus:border-primary flex-1" />
-              <button className="rounded-md gradient-brand text-primary-foreground px-4 py-2 text-sm font-semibold glow-cyan">
-                Submit
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
       <p className="text-xs text-muted-foreground">
-        NameGadget landers auto-optimize buyer engagement with fluid motion, live countdowns, and frictionless offer capture.
+        Switch templates instantly. NameGadget landers auto-optimize buyer engagement with fluid motion, live countdowns, and frictionless offer capture.
       </p>
     </div>
   );
