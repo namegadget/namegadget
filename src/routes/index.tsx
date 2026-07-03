@@ -15,6 +15,7 @@ import {
   BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, LabelList,
 } from "recharts";
 import logo from "@/assets/logo.png.asset.json";
+import founderImg from "@/assets/founder.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -1002,8 +1003,18 @@ function Landing() {
             </ul>
           </div>
         </div>
-        <div className="max-w-6xl mx-auto mt-8 pt-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+        <div className="max-w-6xl mx-auto mt-8 pt-6 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <span>© {new Date().getFullYear()} NameGadget · 0% commission · pure P2P</span>
+          <div className="flex items-center gap-3">
+            <img
+              src={founderImg.url}
+              alt="Founder"
+              className="h-8 w-8 rounded-full object-cover border border-border shadow-sm"
+            />
+            <span className="inline-flex items-center gap-1">
+              Made with <span className="text-red-500">♥</span> by NameGadget
+            </span>
+          </div>
           <span className="inline-flex items-center gap-1.5">
             <ShieldCheck className="h-3 w-3 text-primary" /> BYOL · seller-owned negotiation
           </span>
