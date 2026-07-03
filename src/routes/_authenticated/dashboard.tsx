@@ -7,6 +7,7 @@ import {
   Sparkles, X, Radio, MessagesSquare, LayoutTemplate, Globe2,
   ShieldCheck, Send, Copy, ExternalLink, Loader2, Activity,
 } from "lucide-react";
+import { LanderGallery } from "@/components/landers";
 
 type Domain = {
   id: string;
