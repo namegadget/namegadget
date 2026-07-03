@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { MessagesSquare, Send, ShieldCheck, Copy, Plus, X, ArrowRight } from "lucide-react";
+import { MessagesSquare, Send, ShieldCheck, Copy, Plus, X, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { PageShell } from "@/components/page-shell";
+import { createEscrowTransaction } from "@/lib/escrow.functions";
 
 export const Route = createFileRoute("/_authenticated/deal-room")({
   component: DealRoomPage,
@@ -10,35 +12,43 @@ export const Route = createFileRoute("/_authenticated/deal-room")({
 
 type Stage = "Inbound" | "Negotiating" | "Agreed" | "Closed";
 type Msg = { from: "buyer" | "seller"; text: string; time: string };
+type Escrow = {
+  status: "idle" | "creating" | "created" | "error";
+  transactionId?: string;
+  landingUrl?: string | null;
+  error?: string;
+};
 type Deal = {
   id: string;
   domain: string;
   buyer: string;
+  buyerEmail: string;
   offer: number;
   counter?: number;
   stage: Stage;
   messages: Msg[];
   updated: string;
+  escrow?: Escrow;
 };
 
 const STAGES: Stage[] = ["Inbound", "Negotiating", "Agreed", "Closed"];
 
 const SEED: Deal[] = [
-  { id: "d1", domain: "quantum.dev", buyer: "Sequoia Labs", offer: 8000, counter: 14500, stage: "Negotiating", updated: "10:29",
+  { id: "d1", domain: "quantum.dev", buyer: "Sequoia Labs", buyerEmail: "deals@sequoialabs.vc", offer: 8000, counter: 14500, stage: "Negotiating", updated: "10:29",
     messages: [
       { from: "buyer", text: "Opening at $8,000.", time: "10:22" },
       { from: "seller", text: "Counter at $14,500 — comparable sales support this.", time: "10:24" },
       { from: "buyer", text: "$11,000 firm.", time: "10:29" },
     ] },
-  { id: "d2", domain: "aiagent.io", buyer: "Anthropic Corp", offer: 22000, stage: "Inbound", updated: "09:55",
+  { id: "d2", domain: "aiagent.io", buyer: "Anthropic Corp", buyerEmail: "acquisitions@anthropic.com", offer: 22000, stage: "Inbound", updated: "09:55",
     messages: [{ from: "buyer", text: "We'd like to acquire aiagent.io. Opening bid $22k.", time: "09:55" }] },
-  { id: "d3", domain: "neuralcore.ai", buyer: "OpenAI Research", offer: 45000, counter: 55000, stage: "Agreed", updated: "Yesterday",
+  { id: "d3", domain: "neuralcore.ai", buyer: "OpenAI Research", buyerEmail: "domains@openai.com", offer: 45000, counter: 55000, stage: "Agreed", updated: "Yesterday",
     messages: [
       { from: "buyer", text: "$45k final?", time: "Yesterday" },
       { from: "seller", text: "$55k firm. Escrow ready.", time: "Yesterday" },
       { from: "buyer", text: "Accepted. Proceeding via Escrow.com.", time: "Yesterday" },
     ] },
-  { id: "d4", domain: "fintechly.com", buyer: "Stripe Ventures", offer: 32000, stage: "Closed", updated: "3d ago",
+  { id: "d4", domain: "fintechly.com", buyer: "Stripe Ventures", buyerEmail: "ma@stripe.com", offer: 32000, stage: "Closed", updated: "3d ago",
     messages: [{ from: "buyer", text: "Deal closed. Wire sent.", time: "3d ago" }] },
 ];
 
@@ -73,12 +83,48 @@ function DealRoomPage() {
   function addDeal() {
     const domain = prompt("Domain for new deal?");
     if (!domain) return;
+    const buyerEmail = prompt("Buyer email (they'll be added to Escrow automatically)?") || "buyer@example.com";
     const id = `d${Date.now()}`;
     setDeals((ds) => [
-      { id, domain, buyer: "New buyer", offer: 0, stage: "Inbound", messages: [], updated: "just now" },
+      { id, domain, buyer: buyerEmail.split("@")[0], buyerEmail, offer: 0, stage: "Inbound", messages: [], updated: "just now" },
       ...ds,
     ]);
     setOpenId(id);
+  }
+
+  // Auto-generate Escrow transaction when a deal enters "Agreed".
+  const createEscrow = useServerFn(createEscrowTransaction);
+  async function autoEscrow(deal: Deal) {
+    if (deal.escrow?.status === "creating" || deal.escrow?.status === "created") return;
+    const amount = deal.counter ?? deal.offer;
+    if (!amount) return;
+    update(deal.id, { escrow: { status: "creating" } });
+    toast.info(`Generating Escrow transaction for ${deal.domain}…`);
+    try {
+      const res = await createEscrow({
+        data: { domain: deal.domain, amount, buyerEmail: deal.buyerEmail },
+      });
+      if (res.ok) {
+        update(deal.id, {
+          escrow: { status: "created", transactionId: String(res.transactionId), landingUrl: res.landingUrl },
+        });
+        toast.success(`Escrow #${res.transactionId} created — 0% commission, NameGadget as broker.`);
+      } else {
+        update(deal.id, { escrow: { status: "error", error: res.error } });
+        toast.error(`Escrow failed (${res.status}): ${res.error.slice(0, 120)}`);
+      }
+    } catch (e: any) {
+      update(deal.id, { escrow: { status: "error", error: e.message } });
+      toast.error(e.message);
+    }
+  }
+
+  function moveWithEscrow(id: string, stage: Stage) {
+    move(id, stage);
+    if (stage === "Agreed") {
+      const d = deals.find((x) => x.id === id);
+      if (d) void autoEscrow({ ...d, stage });
+    }
   }
 
   return (
@@ -101,7 +147,7 @@ function DealRoomPage() {
           <div
             key={stage}
             onDragOver={(e) => e.preventDefault()}
-            onDrop={() => { if (dragId) { move(dragId, stage); setDragId(null); } }}
+            onDrop={() => { if (dragId) { moveWithEscrow(dragId, stage); setDragId(null); } }}
             className="rounded-xl border border-border bg-card/60 p-3 min-h-[420px] flex flex-col"
           >
             <div className="flex items-center justify-between mb-3 px-1">
@@ -135,6 +181,13 @@ function DealRoomPage() {
                       </span>
                     )}
                   </div>
+                  {d.escrow && (
+                    <div className="mt-2 flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest">
+                      {d.escrow.status === "creating" && <><Loader2 className="h-3 w-3 animate-spin text-primary" /><span className="text-primary">Escrow…</span></>}
+                      {d.escrow.status === "created" && <><CheckCircle2 className="h-3 w-3 text-success" /><span className="text-success">Escrow #{d.escrow.transactionId}</span></>}
+                      {d.escrow.status === "error" && <span className="text-destructive">Escrow error</span>}
+                    </div>
+                  )}
                 </div>
               ))}
               {grouped[stage].length === 0 && (
@@ -152,7 +205,8 @@ function DealRoomPage() {
           deal={active}
           onClose={() => setOpenId(null)}
           onUpdate={(patch) => update(active.id, patch)}
-          onMove={(stage) => move(active.id, stage)}
+          onMove={(stage) => moveWithEscrow(active.id, stage)}
+          onEscrow={() => autoEscrow(active)}
         />
       )}
     </PageShell>
@@ -160,8 +214,8 @@ function DealRoomPage() {
 }
 
 function DealDetail({
-  deal, onClose, onUpdate, onMove,
-}: { deal: Deal; onClose: () => void; onUpdate: (p: Partial<Deal>) => void; onMove: (s: Stage) => void }) {
+  deal, onClose, onUpdate, onMove, onEscrow,
+}: { deal: Deal; onClose: () => void; onUpdate: (p: Partial<Deal>) => void; onMove: (s: Stage) => void; onEscrow: () => void }) {
   const [draft, setDraft] = useState("");
   const [amount, setAmount] = useState("");
 
@@ -185,7 +239,7 @@ function DealDetail({
       >
         <div className="sticky top-0 bg-card/95 backdrop-blur border-b border-border px-4 sm:px-6 py-4 flex items-center justify-between z-10 gap-3">
           <div className="min-w-0">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground truncate">Deal · {deal.buyer}</p>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground truncate">Deal · {deal.buyer} · {deal.buyerEmail}</p>
             <h3 className="text-lg sm:text-xl font-bold truncate">{deal.domain}</h3>
           </div>
           <button onClick={onClose} className="p-2 rounded-md hover:bg-muted shrink-0"><X className="h-4 w-4" /></button>
@@ -260,7 +314,15 @@ function DealDetail({
               <span className="ml-auto rounded-full border border-success/40 bg-success/10 text-success px-2 py-0.5 text-[10px] font-semibold">0% fees</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {["Escrow", "Atompay", "Safepay"].map((p) => (
+              <button
+                onClick={onEscrow}
+                disabled={deal.escrow?.status === "creating"}
+                className="rounded-lg border border-primary/40 bg-primary/5 hover:border-primary text-primary py-2 text-sm font-medium inline-flex items-center justify-center gap-1 disabled:opacity-60"
+              >
+                {deal.escrow?.status === "creating" && <Loader2 className="h-3 w-3 animate-spin" />}
+                {deal.escrow?.status === "created" ? "Escrow ✓" : "Escrow"}
+              </button>
+              {["Atompay", "Safepay"].map((p) => (
                 <button
                   key={p}
                   onClick={() => toast.success(`${p} — Frictionless Integration Generated Successfully.`)}
@@ -270,6 +332,18 @@ function DealDetail({
                 </button>
               ))}
             </div>
+
+            {deal.escrow?.status === "created" && deal.escrow.landingUrl && (
+              <div className="mt-3 rounded-lg border border-success/40 bg-success/10 p-3 text-xs">
+                <p className="font-semibold text-success mb-1">Escrow #{deal.escrow.transactionId} — auto-generated</p>
+                <p className="text-muted-foreground mb-2">Broker: NameGadget · 0% commission · Parties auto-invited by email.</p>
+                <a href={deal.escrow.landingUrl} target="_blank" rel="noreferrer" className="font-mono text-primary underline break-all">{deal.escrow.landingUrl}</a>
+              </div>
+            )}
+            {deal.escrow?.status === "error" && (
+              <div className="mt-3 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">{deal.escrow.error}</div>
+            )}
+
             <div className="mt-3 flex items-center gap-2">
               <code className="flex-1 text-xs bg-muted rounded px-2 py-1.5 truncate">
                 namegadget.deal/{deal.id}
