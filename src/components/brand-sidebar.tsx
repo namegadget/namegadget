@@ -5,6 +5,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import darkLogo from "@/assets/darkmodelogo.png.asset.json";
+
 
 type NavItem = { num: string; label: string; to: string; icon: React.ComponentType<{ className?: string }> };
 
