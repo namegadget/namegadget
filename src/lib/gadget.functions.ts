@@ -40,7 +40,7 @@ export const appraiseDomain = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const gateway = getGateway();
     try {
-      const { experimental_output } = await generateText({
+      const { output } = await generateText({
         model: gateway(MODEL),
         output: Output.object({ schema: AppraisalSchema }),
         prompt: `You are a senior domain-industry appraiser (like Estibot/GoDaddy Appraisals).
@@ -49,7 +49,7 @@ Consider: TLD, length, pronounceability, keyword strength, industry vertical, br
 Return a realistic USD valuation range, 3 plausible comparable sales (real-sounding names, prices $500-$500k, recent years), 5 highly targeted corporate buyer leads with real company names in matching industries, and estimated regional buyer-intent distribution.
 Be specific and concrete — no filler.`,
       });
-      return { ok: true as const, ...experimental_output };
+      return { ok: true as const, ...output };
     } catch (err) {
       if (NoObjectGeneratedError.isInstance(err)) {
         return { ok: false as const, error: "AI returned malformed data. Try again." };
@@ -96,7 +96,7 @@ export const analyzeTechProfile = createServerFn({ method: "POST" })
 
     const gateway = getGateway();
     try {
-      const { experimental_output } = await generateText({
+      const { output } = await generateText({
         model: gateway(MODEL),
         output: Output.object({ schema: TechSchema }),
         prompt: `You are a BuiltWith-style tech profiler. Given the raw response for ${data.domain}, identify the technologies in use across these categories: Analytics and Tracking, Widgets, Language, Frameworks, Mobile, Content Delivery Network, JavaScript Libraries, Advertising, Verified Link, Name Server, Email Hosting, Web Hosting, SSL Certificates, Robots.txt. Only include what's evidenced by the HTML or headers. Keep it concise (max 4 items per category, drop empty categories).
@@ -105,7 +105,7 @@ HTTP status: ${statusCode}
 Response headers: ${JSON.stringify(headers).slice(0, 3000)}
 HTML (truncated): ${html.slice(0, 30_000)}`,
       });
-      return { ok: true as const, ...experimental_output, fetched: statusCode > 0 };
+      return { ok: true as const, ...output, fetched: statusCode > 0 };
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       return { ok: false as const, error: message };
@@ -127,12 +127,12 @@ export const generateLivePulse = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const gateway = getGateway();
     try {
-      const { experimental_output } = await generateText({
+      const { output } = await generateText({
         model: gateway(MODEL),
         output: Output.object({ schema: PulseSchema }),
         prompt: `Simulate 4 plausible fresh market pulse events for the domain "${data.domain}" — search-volume spikes, competitor brand registrations, valuation shifts, or enterprise buyer signals. Reference the domain's keyword or vertical specifically. Make each unique and current-sounding (${new Date().toISOString().slice(0, 10)}). No repeats across calls.`,
       });
-      return { ok: true as const, ...experimental_output };
+      return { ok: true as const, ...output };
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       return { ok: false as const, error: message };
