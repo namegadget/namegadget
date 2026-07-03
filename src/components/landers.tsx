@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { animate, stagger, createTimeline } from "animejs";
 import { Globe2, ShoppingCart, Mail, Clock, Shield, Star, ArrowRight, Sparkles, Zap, Check, TrendingUp, Heart } from "lucide-react";
+import { EXTRA_LANDERS } from "./landers-extra";
 
 type Val = { low: number; high: number };
 type LanderProps = { domain: string; val: Val };
@@ -527,6 +528,7 @@ export const LANDER_TEMPLATES: Template[] = [
   { id: "orbit",      label: "Orbit / Blob",       group: "Animated",     Comp: OrbitLander },
   { id: "marquee",    label: "Editorial Marquee",  group: "Animated",     Comp: MarqueeLander },
   { id: "glitch",     label: "Neon Glitch",        group: "Animated",     Comp: GlitchLander },
+  ...EXTRA_LANDERS,
 ];
 
 export function LanderGallery({ domain, val }: LanderProps) {
