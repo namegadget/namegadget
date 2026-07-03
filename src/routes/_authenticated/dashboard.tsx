@@ -1,9 +1,9 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  Zap, Search, LogOut, Plus, TrendingUp, AlertTriangle, Users2,
+  Search, Plus, TrendingUp, AlertTriangle, Users2,
   Sparkles, X, Radio, MessagesSquare, LayoutTemplate, Globe2,
   ShieldCheck, Send, Copy, ExternalLink, Loader2, Activity,
 } from "lucide-react";
@@ -32,7 +32,6 @@ function daysUntil(dateStr: string) {
 }
 
 function Dashboard() {
-  const navigate = useNavigate();
   const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
@@ -53,10 +52,6 @@ function Dashboard() {
     setLoading(false);
   }
 
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
-  }
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -70,43 +65,48 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top nav */}
-      <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg gradient-brand glow-cyan flex items-center justify-center">
-              <Zap className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-bold tracking-tight text-glow hidden sm:inline">NameGadget</span>
+      {/* Brand hero page-header (matches identity system) */}
+      <header className="relative overflow-hidden bg-sidebar text-white">
+        <div className="absolute -top-40 -right-40 h-[560px] w-[560px] rounded-full pointer-events-none"
+             style={{ background: "radial-gradient(circle, rgba(4,120,87,0.22) 0%, transparent 65%)" }} />
+        <div className="absolute -bottom-24 left-16 h-[320px] w-[320px] rounded-full pointer-events-none"
+             style={{ background: "radial-gradient(circle, rgba(4,120,87,0.10) 0%, transparent 65%)" }} />
+        <div className="relative max-w-7xl mx-auto px-8 pt-16 pb-14">
+          <div className="inline-flex items-center gap-2.5 text-[11px] uppercase tracking-[0.12em] font-semibold text-primary mb-6">
+            <span className="inline-block w-7 h-px bg-primary" />
+            Domain Portfolio
           </div>
+          <h1 className="text-4xl md:text-5xl font-light tracking-tight leading-[1.05] max-w-2xl">
+            Welcome back, <strong className="font-bold text-primary">{email.split("@")[0] || "investor"}</strong>.
+          </h1>
+          <div className="mt-8 flex items-center gap-5 flex-wrap text-[11px] font-mono text-white/30">
+            <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> LIVE SYNC</span>
+            <span>·</span>
+            <span>{totalAssets} assets</span>
+            <span>·</span>
+            <span>{totalTraffic.toLocaleString()} visits</span>
+          </div>
+        </div>
+      </header>
 
-          <div className="flex-1 max-w-md ml-4 relative">
+      {/* Toolbar */}
+      <div className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-8 h-14 flex items-center gap-4">
+          <div className="flex-1 max-w-md relative">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               value={query} onChange={(e) => setQuery(e.target.value)}
               placeholder="Search domains, registrars..."
-              className="w-full rounded-md border border-input bg-input/40 pl-9 pr-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+              className="w-full rounded-md border border-border bg-muted pl-9 pr-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
-
-          <div className="ml-auto flex items-center gap-3">
-            <Link
-              to="/account"
-              className="hidden md:flex items-center gap-2 text-xs text-muted-foreground rounded-full pl-1 pr-3 py-1 hover:bg-muted transition"
-              title="Account dashboard"
-            >
-              <div className="h-8 w-8 rounded-full gradient-brand flex items-center justify-center text-primary-foreground font-bold text-sm">
-                {email.slice(0, 1).toUpperCase() || "U"}
-              </div>
-              <span className="max-w-[140px] truncate">{email}</span>
-            </Link>
-            <button onClick={handleSignOut} className="p-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground" title="Sign out">
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
-
+          <Link to="/account" className="text-xs font-mono text-muted-foreground hover:text-foreground uppercase tracking-widest transition">
+            Account →
+          </Link>
         </div>
-      </header>
+      </div>
+
+
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Stats */}
