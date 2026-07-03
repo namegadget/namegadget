@@ -147,7 +147,7 @@ function DealRoomPage() {
           <div
             key={stage}
             onDragOver={(e) => e.preventDefault()}
-            onDrop={() => { if (dragId) { move(dragId, stage); setDragId(null); } }}
+            onDrop={() => { if (dragId) { moveWithEscrow(dragId, stage); setDragId(null); } }}
             className="rounded-xl border border-border bg-card/60 p-3 min-h-[420px] flex flex-col"
           >
             <div className="flex items-center justify-between mb-3 px-1">
@@ -181,6 +181,13 @@ function DealRoomPage() {
                       </span>
                     )}
                   </div>
+                  {d.escrow && (
+                    <div className="mt-2 flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest">
+                      {d.escrow.status === "creating" && <><Loader2 className="h-3 w-3 animate-spin text-primary" /><span className="text-primary">Escrow…</span></>}
+                      {d.escrow.status === "created" && <><CheckCircle2 className="h-3 w-3 text-success" /><span className="text-success">Escrow #{d.escrow.transactionId}</span></>}
+                      {d.escrow.status === "error" && <span className="text-destructive">Escrow error</span>}
+                    </div>
+                  )}
                 </div>
               ))}
               {grouped[stage].length === 0 && (
@@ -198,7 +205,8 @@ function DealRoomPage() {
           deal={active}
           onClose={() => setOpenId(null)}
           onUpdate={(patch) => update(active.id, patch)}
-          onMove={(stage) => move(active.id, stage)}
+          onMove={(stage) => moveWithEscrow(active.id, stage)}
+          onEscrow={() => autoEscrow(active)}
         />
       )}
     </PageShell>
@@ -206,8 +214,8 @@ function DealRoomPage() {
 }
 
 function DealDetail({
-  deal, onClose, onUpdate, onMove,
-}: { deal: Deal; onClose: () => void; onUpdate: (p: Partial<Deal>) => void; onMove: (s: Stage) => void }) {
+  deal, onClose, onUpdate, onMove, onEscrow,
+}: { deal: Deal; onClose: () => void; onUpdate: (p: Partial<Deal>) => void; onMove: (s: Stage) => void; onEscrow: () => void }) {
   const [draft, setDraft] = useState("");
   const [amount, setAmount] = useState("");
 
