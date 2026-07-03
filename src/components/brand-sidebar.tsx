@@ -44,17 +44,14 @@ export function BrandSidebar() {
     <aside className="fixed left-0 top-0 bottom-0 w-[240px] bg-sidebar text-sidebar-foreground z-40 flex flex-col border-r border-sidebar-border">
       {/* Brand mark */}
       <div className="px-5 pt-7 pb-5 border-b border-sidebar-border">
-        <Link to="/dashboard" className="flex items-center gap-2 mb-1 group">
-          <span className="text-[20px] font-bold text-white tracking-tight leading-none">N</span>
-          <span className="flex items-center gap-1">
-            <span className="block w-[14px] h-[5px] rounded-[2px] bg-primary" />
-            <span className="block w-[10px] h-[10px] rounded-full bg-[#065f46]" />
-          </span>
+        <Link to="/dashboard" className="flex items-center gap-2.5 mb-1 group">
+          <img src={darkLogo.url} alt="NameGadget" className="h-8 w-auto" />
         </Link>
         <span className="text-[10px] font-mono uppercase tracking-[0.1em] text-white/20">
           NameGadget
         </span>
       </div>
+
 
       {/* Nav groups */}
       <nav className="flex-1 overflow-y-auto px-3 py-3">
