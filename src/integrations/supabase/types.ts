@@ -14,7 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      domains: {
+        Row: {
+          appraised_value: number | null
+          created_at: string
+          domain_name: string
+          expiry_date: string
+          id: string
+          registrar: string
+          status: string
+          user_id: string
+          visitor_count: number
+        }
+        Insert: {
+          appraised_value?: number | null
+          created_at?: string
+          domain_name: string
+          expiry_date: string
+          id?: string
+          registrar: string
+          status?: string
+          user_id: string
+          visitor_count?: number
+        }
+        Update: {
+          appraised_value?: number | null
+          created_at?: string
+          domain_name?: string
+          expiry_date?: string
+          id?: string
+          registrar?: string
+          status?: string
+          user_id?: string
+          visitor_count?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
