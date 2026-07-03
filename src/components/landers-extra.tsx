@@ -759,7 +759,7 @@ function ConstellationLander({ domain, val }: LanderProps) {
       const lines = svgEl.querySelectorAll<SVGLineElement>("line");
       lines.forEach((ln) => {
         animate(ln, {
-          strokeDashoffset: [svg.createDrawable(ln as unknown as SVGElement) ? 200 : 200, 0],
+          strokeDashoffset: [200, 0],
           duration: 2000,
           delay: Math.random() * 1500,
           loop: true,
