@@ -441,8 +441,8 @@ function Landing() {
             <ComparePremiumHeader />
 
             {compareRows.map((r) => (
-              <>
-                <div key={`${r.label}-l`} className="p-4 md:p-5 border-t border-border text-sm text-muted-foreground">
+              <Fragment key={r.label}>
+                <div className="p-4 md:p-5 border-t border-border text-sm text-muted-foreground">
                   {r.label}
                 </div>
                 <div className="p-4 md:p-5 border-t border-l border-border text-sm text-foreground/60 flex items-center gap-2">
@@ -453,7 +453,7 @@ function Landing() {
                   <Check className="h-4 w-4 text-primary shrink-0" />
                   <span className="font-medium">{r.us}</span>
                 </div>
-              </>
+              </Fragment>
             ))}
           </div>
         </div>
