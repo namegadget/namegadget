@@ -401,6 +401,3 @@ function Card({
     </div>
   );
 }
-
-// Landmark import kept in case future WHOIS block is added
-void Landmark;
