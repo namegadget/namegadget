@@ -2,7 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const BASE = () => process.env.ESCROW_API_BASE || "https://api.escrow-sandbox.com";
+// The provided API key is a PRODUCTION Escrow.com key (verified against /customer/me).
+// Sandbox rejects it with 401 — always route to production.
+const BASE = "https://api.escrow.com";
 
 function authHeader() {
   const email = process.env.ESCROW_API_EMAIL;
@@ -65,7 +67,7 @@ export const createEscrowTransaction = createServerFn({ method: "POST" })
       ],
     };
 
-    const res = await fetch(`${BASE()}/2017-09-01/transaction`, {
+    const res = await fetch(`${BASE}/2017-09-01/transaction`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
