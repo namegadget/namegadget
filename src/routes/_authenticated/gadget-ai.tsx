@@ -5,7 +5,6 @@ import {
   Sparkles,
   Search,
   Loader2,
-  Landmark,
   ScrollText,
   Globe2,
   Coins,
