@@ -74,15 +74,15 @@ function Dashboard() {
              style={{ background: "radial-gradient(circle, rgba(4,120,87,0.22) 0%, transparent 65%)" }} />
         <div className="absolute -bottom-24 left-16 h-[320px] w-[320px] rounded-full pointer-events-none"
              style={{ background: "radial-gradient(circle, rgba(4,120,87,0.10) 0%, transparent 65%)" }} />
-        <div className="relative max-w-7xl mx-auto px-8 pt-16 pb-14">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-10 md:pt-16 pb-10 md:pb-14">
           <div className="inline-flex items-center gap-2.5 text-[11px] uppercase tracking-[0.12em] font-semibold text-primary mb-6">
             <span className="inline-block w-7 h-px bg-primary" />
             Domain Portfolio
           </div>
-          <h1 className="text-4xl md:text-5xl font-light tracking-tight leading-[1.05] max-w-2xl">
-            Welcome back, <strong className="font-bold text-primary">{email.split("@")[0] || "investor"}</strong>.
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight leading-[1.05] max-w-2xl">
+            Welcome back, <strong className="font-bold text-primary break-words">{email.split("@")[0] || "investor"}</strong>.
           </h1>
-          <div className="mt-8 flex items-center gap-5 flex-wrap text-[11px] font-mono text-white/30">
+          <div className="mt-6 md:mt-8 flex items-center gap-3 sm:gap-5 flex-wrap text-[11px] font-mono text-white/30">
             <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> LIVE SYNC</span>
             <span>·</span>
             <span>{totalAssets} assets</span>
@@ -92,40 +92,40 @@ function Dashboard() {
         </div>
       </header>
 
-      <div className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-8 h-14 flex items-center gap-4">
-          <div className="flex-1 max-w-md relative">
+      <div className="sticky top-14 md:top-0 z-20 border-b border-border bg-background/90 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 h-14 flex items-center gap-3 sm:gap-4">
+          <div className="flex-1 max-w-md relative min-w-0">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               value={query} onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search domains, registrars..."
+              placeholder="Search domains..."
               className="w-full rounded-md border border-border bg-muted pl-9 pr-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
-          <Link to="/account" className="text-xs font-mono text-muted-foreground hover:text-foreground uppercase tracking-widest transition">
+          <Link to="/account" className="text-xs font-mono text-muted-foreground hover:text-foreground uppercase tracking-widest transition whitespace-nowrap">
             Account →
           </Link>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <StatCard label="Total Assets" value={totalAssets} icon={Globe2} accent="cyan" hint="Domains under management" />
           <StatCard label="Critical Expirations" value={critical} icon={AlertTriangle} accent="danger" hint="< 90 days remaining" />
           <StatCard label="Total Traffic" value={totalTraffic.toLocaleString()} icon={TrendingUp} accent="sky" hint="Aggregated visitors" />
         </div>
 
-        <div className="mt-8 rounded-2xl border border-border bg-card/60 backdrop-blur overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-            <div>
-              <h2 className="font-semibold">Domain Portfolio</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Click any row to open the gadget panel</p>
+        <div className="mt-6 md:mt-8 rounded-2xl border border-border bg-card/60 backdrop-blur overflow-hidden">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 sm:px-6 py-4 border-b border-border">
+            <div className="min-w-0">
+              <h2 className="font-semibold truncate">Domain Portfolio</h2>
+              <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">Click any row to open the gadget panel</p>
             </div>
             <button
               onClick={() => setAddOpen(true)}
-              className="inline-flex items-center gap-2 rounded-md gradient-brand text-primary-foreground px-4 py-2 text-sm font-semibold glow-cyan hover:opacity-90 transition"
+              className="inline-flex items-center gap-1.5 sm:gap-2 rounded-md gradient-brand text-primary-foreground px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold glow-cyan hover:opacity-90 transition whitespace-nowrap"
             >
-              <Plus className="h-4 w-4" /> Add New Asset
+              <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add New Asset</span><span className="sm:hidden">Add</span>
             </button>
           </div>
 
