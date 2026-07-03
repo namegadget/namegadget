@@ -32,7 +32,6 @@ function daysUntil(dateStr: string) {
 }
 
 function Dashboard() {
-  const navigate = useNavigate();
   const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
@@ -53,10 +52,6 @@ function Dashboard() {
     setLoading(false);
   }
 
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
-  }
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
