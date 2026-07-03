@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { animate, stagger, createTimeline, utils } from "animejs";
+import { animate, stagger, createTimeline } from "animejs";
+import { Fragment } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  ArrowRight, Activity, Zap, ShieldCheck, TrendingUp, Radio,
+  ArrowRight, Activity, ShieldCheck, Radio,
   Layers, Bot, Handshake, Check, X, Sparkles, Infinity as InfinityIcon,
 } from "lucide-react";
 import logo from "@/assets/logo.png.asset.json";
