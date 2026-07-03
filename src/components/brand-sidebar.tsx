@@ -12,14 +12,14 @@ type NavItem = { num: string; label: string; to: string; icon: React.ComponentTy
 
 const NAV_MAIN: NavItem[] = [
   { num: "01", label: "Dashboard",   to: "/dashboard", icon: LayoutDashboard },
-  { num: "02", label: "Portfolio",   to: "/dashboard", icon: Globe2 },
+  { num: "02", label: "Portfolio",   to: "/portfolio", icon: Globe2 },
 ];
 
 const NAV_TOOLS: NavItem[] = [
-  { num: "03", label: "gadget AI",     to: "/dashboard", icon: Sparkles },
-  { num: "04", label: "gadget+ Live",  to: "/dashboard", icon: Radio },
-  { num: "05", label: "Deal Room",     to: "/dashboard", icon: MessagesSquare },
-  { num: "06", label: "Landers",       to: "/dashboard", icon: LayoutTemplate },
+  { num: "03", label: "gadget AI",     to: "/gadget-ai", icon: Sparkles },
+  { num: "04", label: "gadget+ Live",  to: "/gadget-live", icon: Radio },
+  { num: "05", label: "Deal Room",     to: "/deal-room", icon: MessagesSquare },
+  { num: "06", label: "Landers",       to: "/landers", icon: LayoutTemplate },
 ];
 
 const NAV_ACCOUNT: NavItem[] = [
