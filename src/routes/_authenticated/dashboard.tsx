@@ -412,10 +412,40 @@ function TabBtn({ active, onClick, icon: Icon, children }: any) {
 /* ============ REAL AI Views ============ */
 
 type AppraisalData = {
-  low: number; high: number; confidence: number; rationale: string;
-  comparableSales: { name: string; price: number; year: number }[];
+  meaning: string; algorithm: string;
+  insights: { tone: string; icon: string; title: string; body: string }[];
+  marketValue: number; suggestedLow: number; suggestedHigh: number; valueBasis: string; confidence: number;
+  ecosystem: { keyword: string; totalTlds: number; totalNames: number; interpretation: string; extensionsCsv: string; analysis: string };
+  comparableSales: { name: string; price: number; date: string; venue: string; relevance: string }[];
+  pricingContext: string;
+  webPresence: { searchNotes: string[]; usageStats: string[]; multiCountry: string; majorPlatforms: string };
+  altExtensions: { domain: string; status: string; statusTone: string; notes: string }[];
+  altExtensionAnalysis: string;
+  brandScores: { component: string; score: number; rationale: string }[];
+  brandScoreTotal: number;
+  longTerm: {
+    projected: number; rangeLow: number; rangeHigh: number;
+    thesis: { title: string; body: string }[];
+    catalysts: string[];
+  };
+  rationale: string;
   leads: { company: string; industry: string; match: number; reason: string }[];
   geography: { region: string; pct: number }[];
+};
+
+const INSIGHT_TONES: Record<string, string> = {
+  market:    "border-l-4 border-sky-500 bg-sky-500/5",
+  scarcity:  "border-l-4 border-amber-500 bg-amber-500/5",
+  dual:      "border-l-4 border-emerald-500 bg-emerald-500/5",
+  trademark: "border-l-4 border-rose-500 bg-rose-500/5",
+  trend:     "border-l-4 border-violet-500 bg-violet-500/5",
+};
+
+const STATUS_TONE: Record<string, string> = {
+  developed:  "text-emerald-600 bg-emerald-500/10",
+  active:     "text-amber-600 bg-amber-500/10",
+  registered: "text-orange-600 bg-orange-500/10",
+  none:       "text-muted-foreground bg-muted",
 };
 
 function GadgetView({ domain }: { domain: Domain }) {
@@ -428,49 +458,232 @@ function GadgetView({ domain }: { domain: Domain }) {
     setLoading(true); setError(null);
     const r = await appraise({ data: { domain: domain.domain_name } });
     setLoading(false);
-    if (r.ok) setData(r);
-    else setError(r.error);
+    if (r.ok) {
+      const { ok: _ok, error: _e, ...rest } = r;
+      setData(rest as AppraisalData);
+    } else setError(r.error);
   }
 
   useEffect(() => { void run(); }, [domain.domain_name]);
 
-  if (loading) return <AiLoading label="Analyzing domain with Gadget AI..." />;
+  if (loading) return <AiLoading label="Running full DomainIQ-Pro appraisal..." />;
   if (error || !data) return <AiError message={error ?? "Failed to load"} onRetry={run} />;
 
+  const fmt = (n: number) => `$${Math.round(n).toLocaleString()}`;
   const meterPct = Math.min(100, data.confidence);
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-xl border border-border bg-background/40 p-5">
+    <div className="space-y-5">
+      {/* HERO */}
+      <section className="rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-primary via-primary/90 to-violet-600 text-primary-foreground p-6 relative">
         <div className="flex items-center justify-between">
-          <h4 className="font-semibold flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> AI Appraisal</h4>
-          <button onClick={run} className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1">
-            <RefreshCw className="h-3 w-3" /> Re-analyze
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur px-3 py-1 text-[10px] uppercase tracking-widest">
+            <Sparkles className="h-3 w-3" /> Domain Appraisal
+          </span>
+          <button onClick={run} className="text-[11px] inline-flex items-center gap-1 opacity-80 hover:opacity-100">
+            <RefreshCw className="h-3 w-3" /> Re-run
           </button>
         </div>
-        <p className="mt-4 text-3xl font-bold gradient-brand bg-clip-text text-transparent">
-          ${data.low.toLocaleString()} – ${data.high.toLocaleString()}
-        </p>
-        <p className="text-xs text-muted-foreground mt-1">Confidence {data.confidence}%</p>
-        <div className="mt-3 h-2 rounded-full bg-muted overflow-hidden">
-          <div className="h-full gradient-brand" style={{ width: `${meterPct}%` }} />
+        <h1 className="mt-4 text-4xl font-black tracking-tight">{domain.domain_name}</h1>
+        <p className="mt-1 text-sm opacity-90">{data.meaning}</p>
+        <div className="mt-4 flex flex-wrap gap-3 text-[11px] opacity-90">
+          <span>📅 {new Date().toLocaleString("en-US", { month: "long", year: "numeric" })}</span>
+          <span>🧠 {data.algorithm}</span>
+          <span>🌐 .{domain.domain_name.split(".").slice(-1)[0]} TLD</span>
         </div>
-        <p className="mt-4 text-sm text-foreground/80 leading-relaxed">{data.rationale}</p>
       </section>
 
-      <section className="rounded-xl border border-border bg-background/40 p-5">
-        <h4 className="font-semibold mb-3">Comparable Sales</h4>
-        <div className="space-y-1.5">
-          {data.comparableSales.map((c, i) => (
-            <div key={i} className="flex items-center justify-between text-sm py-1.5 border-b border-border/60 last:border-0">
-              <span className="font-mono">{c.name}</span>
-              <span className="text-muted-foreground text-xs">{c.year}</span>
-              <span className="font-semibold text-primary">${c.price.toLocaleString()}</span>
+      {/* INSIGHT CALLOUTS */}
+      <div className="space-y-2.5">
+        {data.insights.map((ins, i) => (
+          <div key={i} className={`rounded-lg p-4 ${INSIGHT_TONES[ins.tone] ?? INSIGHT_TONES.market}`}>
+            <p className="text-sm font-bold flex items-start gap-2">
+              <span className="text-lg leading-none">{ins.icon}</span>
+              <span>{ins.title}</span>
+            </p>
+            <p className="mt-1.5 text-xs text-foreground/80 leading-relaxed pl-7">{ins.body}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* VALUE CARDS */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-5">
+          <p className="text-[10px] uppercase tracking-widest opacity-90">Estimated Market Value</p>
+          <p className="text-3xl font-black mt-2">{fmt(data.marketValue)}</p>
+          <p className="text-[10px] opacity-80 mt-2">{data.algorithm}</p>
+        </div>
+        <div className="rounded-xl border-2 border-primary/40 bg-primary/5 p-5">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Suggested Range</p>
+          <p className="text-2xl font-black mt-2 text-primary">{fmt(data.suggestedLow)} – {fmt(data.suggestedHigh)}</p>
+          <p className="text-[10px] text-muted-foreground mt-2">{data.valueBasis}</p>
+        </div>
+      </div>
+      <div className="rounded-lg bg-muted/60 p-3">
+        <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+          <span>Confidence</span><span>{data.confidence}%</span>
+        </div>
+        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+          <div className="h-full gradient-brand" style={{ width: `${meterPct}%` }} />
+        </div>
+      </div>
+
+      {/* WHOIS */}
+      <Card title="📋 WHOIS & Registration">
+        <KV label="Domain" value={domain.domain_name} />
+        <KV label="Registrar" value={domain.registrar || "—"} />
+        <KV label="Expiry" value={new Date(domain.expiry_date).toLocaleDateString()} />
+        <KV label="Status" value={domain.status} />
+        <KV label="Visitors" value={domain.visitor_count.toLocaleString()} />
+      </Card>
+
+      {/* TLD ECOSYSTEM */}
+      <Card title="🌐 TLD Ecosystem">
+        <div className="grid grid-cols-4 gap-3 text-xs mb-3">
+          <Stat label="Keyword" value={data.ecosystem.keyword} />
+          <Stat label="Total TLDs" value={data.ecosystem.totalTlds.toLocaleString()} />
+          <Stat label="Total Names" value={data.ecosystem.totalNames.toLocaleString()} />
+          <Stat label="Signal" value={data.ecosystem.interpretation} highlight />
+        </div>
+        <p className="text-[11px] text-muted-foreground mb-2"><strong className="text-foreground">Extensions:</strong> {data.ecosystem.extensionsCsv}</p>
+        <p className="text-xs text-foreground/80 leading-relaxed">{data.ecosystem.analysis}</p>
+      </Card>
+
+      {/* COMPARABLE SALES */}
+      <Card title="💰 Comparable Sales">
+        <div className="overflow-hidden rounded-lg border border-border">
+          <table className="w-full text-xs">
+            <thead className="bg-muted/60 text-[10px] uppercase tracking-widest text-muted-foreground">
+              <tr>
+                <th className="text-left px-3 py-2 font-medium">Domain</th>
+                <th className="text-left px-3 py-2 font-medium">Price</th>
+                <th className="text-left px-3 py-2 font-medium">Date</th>
+                <th className="text-left px-3 py-2 font-medium">Venue</th>
+                <th className="text-left px-3 py-2 font-medium">Relevance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.comparableSales.map((s, i) => (
+                <tr key={i} className={`border-t border-border ${s.relevance === "THIS DOMAIN" ? "bg-emerald-500/10" : ""}`}>
+                  <td className="px-3 py-2 font-mono font-semibold">{s.name}</td>
+                  <td className="px-3 py-2 font-bold">{fmt(s.price)}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{s.date}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{s.venue}</td>
+                  <td className="px-3 py-2">
+                    <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest ${
+                      s.relevance === "THIS DOMAIN" ? "bg-primary text-primary-foreground" : "bg-amber-500/20 text-amber-700"
+                    }`}>{s.relevance}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-3 text-xs text-foreground/70 leading-relaxed"><strong className="text-foreground">Pricing tier: </strong>{data.pricingContext}</p>
+      </Card>
+
+      {/* GOOGLE PRESENCE */}
+      <Card title="🔍 Google Presence & Coverage">
+        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Search results</p>
+        <ul className="space-y-1 mb-3">
+          {data.webPresence.searchNotes.map((n, i) => (
+            <li key={i} className="text-xs text-foreground/80 flex gap-2"><span className="text-primary">•</span><span>{n}</span></li>
+          ))}
+        </ul>
+        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">Usage & adoption</p>
+        <ul className="space-y-1 mb-3">
+          {data.webPresence.usageStats.map((n, i) => (
+            <li key={i} className="text-xs text-foreground/80 flex gap-2"><span className="text-primary">•</span><span>{n}</span></li>
+          ))}
+        </ul>
+        <div className="grid grid-cols-1 gap-2 text-xs">
+          <div className="rounded bg-muted/50 p-2"><strong className="text-foreground">Multi-country: </strong><span className="text-muted-foreground">{data.webPresence.multiCountry}</span></div>
+          <div className="rounded bg-muted/50 p-2"><strong className="text-foreground">Major platforms: </strong><span className="text-muted-foreground">{data.webPresence.majorPlatforms}</span></div>
+        </div>
+      </Card>
+
+      {/* ALT EXTENSIONS */}
+      <Card title="🔗 Alternative Extensions">
+        <div className="overflow-hidden rounded-lg border border-border">
+          <table className="w-full text-xs">
+            <thead className="bg-muted/60 text-[10px] uppercase tracking-widest text-muted-foreground">
+              <tr><th className="text-left px-3 py-2 font-medium">Domain</th><th className="text-left px-3 py-2 font-medium">Status</th><th className="text-left px-3 py-2 font-medium">Notes</th></tr>
+            </thead>
+            <tbody>
+              {data.altExtensions.map((e, i) => (
+                <tr key={i} className="border-t border-border">
+                  <td className="px-3 py-2 font-mono font-semibold">{e.domain}</td>
+                  <td className="px-3 py-2">
+                    <span className={`inline-block px-2 py-0.5 rounded font-bold text-[10px] ${STATUS_TONE[e.statusTone] ?? STATUS_TONE.none}`}>{e.status}</span>
+                  </td>
+                  <td className="px-3 py-2 text-muted-foreground">{e.notes}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-3 text-xs text-foreground/80 leading-relaxed"><strong className="text-foreground">Analysis: </strong>{data.altExtensionAnalysis}</p>
+      </Card>
+
+      {/* BRAND SCORE */}
+      <Card title="📊 Brand Score Breakdown">
+        <div className="space-y-2.5">
+          {data.brandScores.map((s, i) => (
+            <div key={i} className="grid grid-cols-[100px_60px_1fr] gap-3 items-start py-1.5 border-b border-border/40 last:border-0">
+              <span className="text-xs font-semibold">{s.component}</span>
+              <span className="text-xs font-mono">
+                <strong className="text-primary">{s.score}</strong><span className="text-muted-foreground"> / 5</span>
+              </span>
+              <span className="text-xs text-muted-foreground leading-snug">{s.rationale}</span>
             </div>
           ))}
         </div>
+        <div className="mt-4 flex items-center gap-3">
+          <span className="text-2xl font-black">{data.brandScoreTotal}<span className="text-muted-foreground text-sm">/25</span></span>
+          <div className="flex-1 h-2.5 rounded-full bg-muted overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-violet-500 to-sky-500" style={{ width: `${(data.brandScoreTotal / 25) * 100}%` }} />
+          </div>
+        </div>
+      </Card>
+
+      {/* LONG-TERM INVESTMENT */}
+      <section className="rounded-2xl border-2 border-violet-500/40 bg-gradient-to-br from-violet-500/5 to-primary/5 p-5">
+        <h4 className="font-bold text-violet-700 flex items-center gap-2 mb-3">📈 Long-Term Investment Value (3-7 Year Hold)</h4>
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="rounded-xl bg-gradient-to-br from-violet-500 to-violet-700 text-white p-4">
+            <p className="text-[10px] uppercase tracking-widest opacity-90">Projected Long-Term Value</p>
+            <p className="text-2xl font-black mt-1">{fmt(data.longTerm.projected)}+</p>
+            <p className="text-[10px] opacity-80 mt-1">3-7 year patient hold</p>
+          </div>
+          <div className="rounded-xl border-2 border-violet-500/40 bg-background p-4">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Long-Term Range</p>
+            <p className="text-2xl font-black mt-1 text-violet-700">{fmt(data.longTerm.rangeLow)} – {fmt(data.longTerm.rangeHigh)}</p>
+            <p className="text-[10px] text-muted-foreground mt-1">Market growth + scarcity</p>
+          </div>
+        </div>
+        <p className="text-xs font-bold text-violet-700 mb-1.5">Investment Thesis</p>
+        <ul className="space-y-1.5 mb-4">
+          {data.longTerm.thesis.map((t, i) => (
+            <li key={i} className="text-xs flex gap-2">
+              <span className="text-violet-500 flex-shrink-0">•</span>
+              <span><strong className="text-foreground">{t.title}:</strong> <span className="text-foreground/80">{t.body}</span></span>
+            </li>
+          ))}
+        </ul>
+        <p className="text-xs font-bold text-violet-700 mb-1.5">Growth Catalysts</p>
+        <ul className="space-y-1">
+          {data.longTerm.catalysts.map((c, i) => (
+            <li key={i} className="text-xs text-foreground/80 flex gap-2"><span className="text-violet-500 flex-shrink-0">•</span><span>{c}</span></li>
+          ))}
+        </ul>
       </section>
 
+      {/* EXEC SUMMARY */}
+      <Card title="🧭 Executive Summary">
+        <p className="text-sm text-foreground/80 leading-relaxed">{data.rationale}</p>
+      </Card>
+
+      {/* LEADS */}
       <section>
         <h4 className="font-semibold flex items-center gap-2 mb-3"><Users2 className="h-4 w-4 text-primary" /> Outbound Corporate Leads</h4>
         <div className="space-y-2">
@@ -492,22 +705,44 @@ function GadgetView({ domain }: { domain: Domain }) {
         </div>
       </section>
 
-      <section className="rounded-xl border border-border bg-background/40 p-5">
-        <h4 className="font-semibold flex items-center gap-2 mb-4"><Globe2 className="h-4 w-4 text-primary" /> Buyer-Intent Geography</h4>
+      {/* GEO */}
+      <Card title="🌍 Buyer-Intent Geography">
         <div className="space-y-3">
           {data.geography.map((g) => (
             <div key={g.region}>
-              <div className="flex justify-between text-xs mb-1">
-                <span>{g.region}</span>
-                <span className="text-muted-foreground">{g.pct}%</span>
-              </div>
+              <div className="flex justify-between text-xs mb-1"><span>{g.region}</span><span className="text-muted-foreground">{g.pct}%</span></div>
               <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                 <div className="h-full gradient-brand" style={{ width: `${Math.min(100, g.pct)}%` }} />
               </div>
             </div>
           ))}
         </div>
-      </section>
+      </Card>
+    </div>
+  );
+}
+
+function Card({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-xl border border-border bg-background/40 p-5">
+      <h4 className="font-semibold mb-3">{title}</h4>
+      {children}
+    </section>
+  );
+}
+function KV({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between text-xs py-1.5 border-b border-border/40 last:border-0">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-medium text-right">{value}</span>
+    </div>
+  );
+}
+function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className={`rounded-lg p-2.5 ${highlight ? "bg-primary/10 border border-primary/30" : "bg-muted/50"}`}>
+      <p className="text-[9px] uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className={`text-sm font-bold mt-0.5 ${highlight ? "text-primary" : ""}`}>{value}</p>
     </div>
   );
 }
