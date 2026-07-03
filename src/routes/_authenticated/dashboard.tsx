@@ -5,8 +5,8 @@ import { toast } from "sonner";
 import {
   Search, Plus, TrendingUp, AlertTriangle, Users2,
   Sparkles, X, Radio, MessagesSquare, LayoutTemplate, Globe2,
-  ShieldCheck, Send, Copy, ExternalLink, Loader2, Activity,
-  RefreshCw, Layers,
+  ShieldCheck, Send, Copy, ExternalLink, Loader2,
+  RefreshCw, Layers, Wallet, Filter, CircleDot,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { LanderGallery } from "@/components/landers";
@@ -29,7 +29,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
-
+type StatusFilter = "All" | Domain["status"];
+type ExpiryFilter = "All" | "critical" | "soon" | "healthy";
 
 function daysUntil(dateStr: string) {
   const d = new Date(dateStr).getTime();
@@ -43,6 +44,8 @@ function Dashboard() {
   const [addOpen, setAddOpen] = useState(false);
   const [selected, setSelected] = useState<Domain | null>(null);
   const [email, setEmail] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
+  const [expiryFilter, setExpiryFilter] = useState<ExpiryFilter>("All");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
@@ -57,15 +60,36 @@ function Dashboard() {
     setLoading(false);
   }
 
+  // Live counts (unfiltered) for the KPI + chip badges
+  const counts = useMemo(() => {
+    const c: Record<Domain["status"], number> = { Parked: 0, "For Sale": 0, Negotiating: 0, Sold: 0 };
+    for (const d of domains) c[d.status]++;
+    return c;
+  }, [domains]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return domains;
-    return domains.filter((d) => d.domain_name.toLowerCase().includes(q) || d.registrar.toLowerCase().includes(q));
-  }, [domains, query]);
+    return domains.filter((d) => {
+      if (statusFilter !== "All" && d.status !== statusFilter) return false;
+      if (expiryFilter !== "All") {
+        const dd = daysUntil(d.expiry_date);
+        if (expiryFilter === "critical" && dd >= 30) return false;
+        if (expiryFilter === "soon" && (dd < 30 || dd >= 90)) return false;
+        if (expiryFilter === "healthy" && dd < 90) return false;
+      }
+      if (q && !(d.domain_name.toLowerCase().includes(q) || d.registrar.toLowerCase().includes(q))) return false;
+      return true;
+    });
+  }, [domains, query, statusFilter, expiryFilter]);
 
   const totalAssets = domains.length;
   const critical = domains.filter((d) => daysUntil(d.expiry_date) < 90).length;
   const totalTraffic = domains.reduce((sum, d) => sum + (d.visitor_count || 0), 0);
+  const totalValue = domains.reduce((sum, d) => sum + (d.appraised_value ?? 0), 0);
+  const soldCount = counts.Sold;
+  const forSaleCount = counts["For Sale"] + counts.Negotiating;
+
+  const activeFilterCount = (statusFilter !== "All" ? 1 : 0) + (expiryFilter !== "All" ? 1 : 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -74,52 +98,77 @@ function Dashboard() {
              style={{ background: "radial-gradient(circle, rgba(4,120,87,0.22) 0%, transparent 65%)" }} />
         <div className="absolute -bottom-24 left-16 h-[320px] w-[320px] rounded-full pointer-events-none"
              style={{ background: "radial-gradient(circle, rgba(4,120,87,0.10) 0%, transparent 65%)" }} />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-10 md:pt-16 pb-10 md:pb-14">
-          <div className="inline-flex items-center gap-2.5 text-[11px] uppercase tracking-[0.12em] font-semibold text-primary mb-6">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-10 md:pt-14 pb-8 md:pb-10">
+          <div className="inline-flex items-center gap-2.5 text-[11px] uppercase tracking-[0.12em] font-semibold text-primary mb-5">
             <span className="inline-block w-7 h-px bg-primary" />
-            Domain Portfolio
+            01 · Dashboard · Management Console
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight leading-[1.05] max-w-2xl">
             Welcome back, <strong className="font-bold text-primary break-words">{email.split("@")[0] || "investor"}</strong>.
           </h1>
-          <div className="mt-6 md:mt-8 flex items-center gap-3 sm:gap-5 flex-wrap text-[11px] font-mono text-white/30">
+          <div className="mt-5 flex items-center gap-3 sm:gap-5 flex-wrap text-[11px] font-mono text-white/40">
             <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> LIVE SYNC</span>
             <span>·</span>
             <span>{totalAssets} assets</span>
             <span>·</span>
             <span>{totalTraffic.toLocaleString()} visits</span>
+            <span>·</span>
+            <span>${totalValue.toLocaleString()} book</span>
           </div>
         </div>
       </header>
 
+      {/* Sticky command bar */}
       <div className="sticky top-14 md:top-0 z-20 border-b border-border bg-background/90 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 h-14 flex items-center gap-3 sm:gap-4">
           <div className="flex-1 max-w-md relative min-w-0">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               value={query} onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search domains..."
+              placeholder="Search domains, registrar…"
               className="w-full rounded-md border border-border bg-muted pl-9 pr-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
+          {activeFilterCount > 0 && (
+            <button
+              onClick={() => { setStatusFilter("All"); setExpiryFilter("All"); }}
+              className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-1"
+            >
+              <Filter className="h-3 w-3" /> {activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""} · Clear
+            </button>
+          )}
           <Link to="/account" className="text-xs font-mono text-muted-foreground hover:text-foreground uppercase tracking-widest transition whitespace-nowrap">
             Account →
           </Link>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <StatCard label="Total Assets" value={totalAssets} icon={Globe2} accent="cyan" hint="Domains under management" />
-          <StatCard label="Critical Expirations" value={critical} icon={AlertTriangle} accent="danger" hint="< 90 days remaining" />
-          <StatCard label="Total Traffic" value={totalTraffic.toLocaleString()} icon={TrendingUp} accent="sky" hint="Aggregated visitors" />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8 space-y-6 md:space-y-8">
+        {/* KPI Summary Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {loading ? (
+            <>
+              <KpiSkeleton /><KpiSkeleton /><KpiSkeleton /><KpiSkeleton />
+            </>
+          ) : (
+            <>
+              <KpiCard label="Total Assets" value={totalAssets} icon={Globe2} accent="primary" hint="Under management" delta={`${forSaleCount} listed`} />
+              <KpiCard label="Book Value" value={`$${formatShort(totalValue)}`} icon={Wallet} accent="emerald" hint="Sum of appraisals" delta={soldCount ? `${soldCount} sold` : "—"} />
+              <KpiCard label="Total Traffic" value={formatShort(totalTraffic)} icon={TrendingUp} accent="sky" hint="Aggregated visits" delta="30-day est." />
+              <KpiCard label="Expiring < 90d" value={critical} icon={AlertTriangle} accent={critical > 0 ? "danger" : "muted"} hint="Renewal window" delta={critical > 0 ? "Action needed" : "All clear"} />
+            </>
+          )}
         </div>
 
-        <div className="mt-6 md:mt-8 rounded-2xl border border-border bg-card/60 backdrop-blur overflow-hidden">
+        {/* Portfolio table */}
+        <div className="rounded-2xl border border-border bg-card/60 backdrop-blur overflow-hidden">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 sm:px-6 py-4 border-b border-border">
             <div className="min-w-0">
               <h2 className="font-semibold truncate">Domain Portfolio</h2>
-              <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">Click any row to open the gadget panel</p>
+              <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
+                {loading ? "Loading…" : `${filtered.length} of ${totalAssets} shown`}
+                {!loading && filtered.length !== totalAssets && " · filtered"}
+              </p>
             </div>
             <button
               onClick={() => setAddOpen(true)}
@@ -129,22 +178,40 @@ function Dashboard() {
             </button>
           </div>
 
+          {/* Quick filter chips */}
+          <div className="px-4 sm:px-6 py-3 border-b border-border bg-muted/30 flex flex-wrap gap-4 gap-y-2 items-center">
+            <FilterGroup label="Status">
+              <Chip active={statusFilter === "All"} onClick={() => setStatusFilter("All")}>All <span className="opacity-50">· {totalAssets}</span></Chip>
+              <Chip active={statusFilter === "Parked"} onClick={() => setStatusFilter("Parked")} tone="muted">Parked <span className="opacity-60">· {counts.Parked}</span></Chip>
+              <Chip active={statusFilter === "For Sale"} onClick={() => setStatusFilter("For Sale")} tone="primary">For Sale <span className="opacity-60">· {counts["For Sale"]}</span></Chip>
+              <Chip active={statusFilter === "Negotiating"} onClick={() => setStatusFilter("Negotiating")} tone="warning">Negotiating <span className="opacity-60">· {counts.Negotiating}</span></Chip>
+              <Chip active={statusFilter === "Sold"} onClick={() => setStatusFilter("Sold")} tone="success">Sold <span className="opacity-60">· {counts.Sold}</span></Chip>
+            </FilterGroup>
+            <FilterGroup label="Expiry">
+              <Chip active={expiryFilter === "All"} onClick={() => setExpiryFilter("All")}>Any</Chip>
+              <Chip active={expiryFilter === "critical"} onClick={() => setExpiryFilter("critical")} tone="danger">&lt; 30d</Chip>
+              <Chip active={expiryFilter === "soon"} onClick={() => setExpiryFilter("soon")} tone="warning">30–90d</Chip>
+              <Chip active={expiryFilter === "healthy"} onClick={() => setExpiryFilter("healthy")} tone="success">Healthy</Chip>
+            </FilterGroup>
+          </div>
+
           {loading ? (
-            <div className="p-12 text-center text-muted-foreground text-sm flex items-center justify-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" /> Loading portfolio...
-            </div>
+            <TableSkeleton />
           ) : filtered.length === 0 ? (
-            <EmptyState onAdd={() => setAddOpen(true)} />
+            totalAssets === 0
+              ? <EmptyState onAdd={() => setAddOpen(true)} />
+              : <NoMatchState onClear={() => { setStatusFilter("All"); setExpiryFilter("All"); setQuery(""); }} />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="text-xs uppercase text-muted-foreground border-b border-border">
+                <thead className="text-xs uppercase text-muted-foreground border-b border-border bg-muted/20">
                   <tr>
                     <th className="text-left font-medium px-6 py-3">Domain</th>
                     <th className="text-left font-medium px-6 py-3">Registrar</th>
                     <th className="text-left font-medium px-6 py-3">Expiry</th>
                     <th className="text-left font-medium px-6 py-3">Traffic</th>
                     <th className="text-left font-medium px-6 py-3">Status</th>
+                    <th className="text-right font-medium px-6 py-3">Value</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -161,6 +228,9 @@ function Dashboard() {
                       <td className="px-6 py-4"><ExpiryBadge days={daysUntil(d.expiry_date)} /></td>
                       <td className="px-6 py-4"><TrafficIndicator count={d.visitor_count} /></td>
                       <td className="px-6 py-4"><StatusBadge status={d.status} /></td>
+                      <td className="px-6 py-4 text-right font-mono text-xs text-muted-foreground">
+                        {d.appraised_value ? `$${d.appraised_value.toLocaleString()}` : "—"}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -176,24 +246,121 @@ function Dashboard() {
   );
 }
 
-function StatCard({
-  label, value, icon: Icon, accent, hint,
-}: { label: string; value: string | number; icon: any; accent: "cyan" | "sky" | "danger"; hint: string }) {
-  const ring = accent === "danger" ? "text-danger border-danger/40" : accent === "sky" ? "text-accent border-accent/40" : "text-primary border-primary/40";
+function formatShort(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return n.toLocaleString();
+}
+
+/* ============ Premium KPI cards + skeletons ============ */
+
+function KpiCard({
+  label, value, icon: Icon, accent, hint, delta,
+}: {
+  label: string; value: string | number;
+  icon: React.ComponentType<{ className?: string }>;
+  accent: "primary" | "emerald" | "sky" | "danger" | "muted";
+  hint: string; delta: string;
+}) {
+  const tone: Record<typeof accent, { ring: string; glow: string; text: string }> = {
+    primary: { ring: "border-primary/40 text-primary", glow: "from-primary/20", text: "text-primary" },
+    emerald: { ring: "border-emerald-500/40 text-emerald-600", glow: "from-emerald-500/20", text: "text-emerald-600" },
+    sky:     { ring: "border-sky-500/40 text-sky-600", glow: "from-sky-500/20", text: "text-sky-600" },
+    danger:  { ring: "border-destructive/40 text-destructive", glow: "from-destructive/20", text: "text-destructive" },
+    muted:   { ring: "border-border text-muted-foreground", glow: "from-muted/40", text: "text-muted-foreground" },
+  } as const;
+  const t = tone[accent];
   return (
-    <div className="rounded-2xl border border-border bg-card/60 backdrop-blur p-6 relative overflow-hidden group hover:border-primary/40 transition">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
-          <p className="mt-2 text-3xl font-bold tracking-tight">{value}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
+    <div className="group relative rounded-2xl border border-border bg-card/60 backdrop-blur p-4 sm:p-5 overflow-hidden hover:border-primary/40 hover:shadow-lg transition-all">
+      <div className={`absolute -top-16 -right-16 h-40 w-40 rounded-full bg-gradient-radial ${t.glow} to-transparent opacity-60 pointer-events-none blur-2xl`} />
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground">{label}</p>
+          <p className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight truncate">{value}</p>
+          <p className="mt-1 text-[11px] text-muted-foreground truncate">{hint}</p>
         </div>
-        <div className={`h-10 w-10 rounded-lg border ${ring} bg-background/40 flex items-center justify-center`}>
-          <Icon className="h-5 w-5" />
+        <div className={`h-9 w-9 sm:h-10 sm:w-10 rounded-lg border ${t.ring} bg-background/40 flex items-center justify-center shrink-0`}>
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
       </div>
-      <div className="absolute inset-x-0 bottom-0 h-px gradient-brand opacity-40 group-hover:opacity-100 transition" />
+      <div className={`relative mt-3 inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest ${t.text}`}>
+        <CircleDot className="h-2.5 w-2.5" /> {delta}
+      </div>
+      <div className="absolute inset-x-0 bottom-0 h-px gradient-brand opacity-30 group-hover:opacity-100 transition" />
     </div>
+  );
+}
+
+function KpiSkeleton() {
+  return (
+    <div className="rounded-2xl border border-border bg-card/60 p-4 sm:p-5 overflow-hidden">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 space-y-3">
+          <div className="h-2.5 w-20 rounded bg-muted animate-pulse" />
+          <div className="h-7 w-24 rounded bg-muted animate-pulse" />
+          <div className="h-2 w-28 rounded bg-muted/70 animate-pulse" />
+        </div>
+        <div className="h-10 w-10 rounded-lg bg-muted animate-pulse" />
+      </div>
+      <div className="mt-3 h-2 w-16 rounded bg-muted/60 animate-pulse" />
+    </div>
+  );
+}
+
+function TableSkeleton() {
+  return (
+    <div className="divide-y divide-border">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="px-6 py-4 flex items-center gap-4">
+          <div className="h-3 w-40 rounded bg-muted animate-pulse" />
+          <div className="h-3 w-20 rounded bg-muted animate-pulse" />
+          <div className="h-3 w-16 rounded bg-muted animate-pulse ml-auto" />
+          <div className="h-3 w-20 rounded bg-muted animate-pulse" />
+          <div className="h-3 w-16 rounded bg-muted animate-pulse" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ============ Filter chips ============ */
+
+function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 min-w-0">
+      <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground shrink-0">{label}</span>
+      <div className="flex flex-wrap gap-1.5">{children}</div>
+    </div>
+  );
+}
+
+type ChipTone = "default" | "muted" | "primary" | "warning" | "success" | "danger";
+function Chip({
+  children, active, onClick, tone = "default",
+}: { children: React.ReactNode; active: boolean; onClick: () => void; tone?: ChipTone }) {
+  const toneCls: Record<ChipTone, string> = {
+    default: "border-border bg-background text-foreground hover:border-primary/40",
+    muted:   "border-border bg-background text-muted-foreground hover:border-primary/40",
+    primary: "border-primary/30 bg-primary/5 text-primary hover:border-primary/60",
+    warning: "border-amber-500/30 bg-amber-500/5 text-amber-700 hover:border-amber-500/60",
+    success: "border-emerald-500/30 bg-emerald-500/5 text-emerald-700 hover:border-emerald-500/60",
+    danger:  "border-destructive/30 bg-destructive/5 text-destructive hover:border-destructive/60",
+  };
+  const activeCls: Record<ChipTone, string> = {
+    default: "gradient-brand !text-primary-foreground border-transparent shadow",
+    muted:   "bg-foreground/90 !text-background border-transparent shadow",
+    primary: "gradient-brand !text-primary-foreground border-transparent shadow",
+    warning: "bg-amber-500 !text-white border-transparent shadow",
+    success: "bg-emerald-600 !text-white border-transparent shadow",
+    danger:  "bg-destructive !text-destructive-foreground border-transparent shadow",
+  };
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all ${active ? activeCls[tone] : toneCls[tone]}`}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -243,6 +410,21 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
       <p className="mt-1 text-sm text-muted-foreground">Add your first domain asset to unlock AI appraisal and outbound leads.</p>
       <button onClick={onAdd} className="mt-6 inline-flex items-center gap-2 rounded-md gradient-brand text-primary-foreground px-4 py-2 text-sm font-semibold glow-cyan">
         <Plus className="h-4 w-4" /> Add First Asset
+      </button>
+    </div>
+  );
+}
+
+function NoMatchState({ onClear }: { onClear: () => void }) {
+  return (
+    <div className="p-12 text-center">
+      <div className="mx-auto h-12 w-12 rounded-xl border border-border bg-muted/40 flex items-center justify-center">
+        <Filter className="h-6 w-6 text-muted-foreground" />
+      </div>
+      <h3 className="mt-4 font-semibold">No domains match these filters</h3>
+      <p className="mt-1 text-sm text-muted-foreground">Try widening your search, status or expiry filter.</p>
+      <button onClick={onClear} className="mt-6 inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted">
+        Clear filters
       </button>
     </div>
   );
