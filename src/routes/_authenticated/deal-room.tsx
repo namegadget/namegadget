@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { MessagesSquare, Send, ShieldCheck, Copy, Plus, X, ArrowRight } from "lucide-react";
+import { MessagesSquare, Send, ShieldCheck, Copy, Plus, X, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { PageShell } from "@/components/page-shell";
+import { createEscrowTransaction } from "@/lib/escrow.functions";
 
 export const Route = createFileRoute("/_authenticated/deal-room")({
   component: DealRoomPage,
@@ -10,15 +12,23 @@ export const Route = createFileRoute("/_authenticated/deal-room")({
 
 type Stage = "Inbound" | "Negotiating" | "Agreed" | "Closed";
 type Msg = { from: "buyer" | "seller"; text: string; time: string };
+type Escrow = {
+  status: "idle" | "creating" | "created" | "error";
+  transactionId?: string;
+  landingUrl?: string | null;
+  error?: string;
+};
 type Deal = {
   id: string;
   domain: string;
   buyer: string;
+  buyerEmail: string;
   offer: number;
   counter?: number;
   stage: Stage;
   messages: Msg[];
   updated: string;
+  escrow?: Escrow;
 };
 
 const STAGES: Stage[] = ["Inbound", "Negotiating", "Agreed", "Closed"];
