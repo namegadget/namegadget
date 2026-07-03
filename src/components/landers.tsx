@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { animate, stagger, createTimeline } from "animejs";
 import { Globe2, ShoppingCart, Mail, Clock, Shield, Star, ArrowRight, Sparkles, Zap, Check, TrendingUp, Heart } from "lucide-react";
+import { EXTRA_LANDERS } from "./landers-extra";
 
 type Val = { low: number; high: number };
 type LanderProps = { domain: string; val: Val };
