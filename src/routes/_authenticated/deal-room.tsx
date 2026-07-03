@@ -181,17 +181,17 @@ function DealDetail({
       <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-2xl h-full bg-card border-l border-border shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-300"
+        className="relative w-full max-w-full sm:max-w-2xl h-full bg-card border-l border-border shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-300"
       >
-        <div className="sticky top-0 bg-card/95 backdrop-blur border-b border-border px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-card/95 backdrop-blur border-b border-border px-4 sm:px-6 py-4 flex items-center justify-between z-10 gap-3">
           <div className="min-w-0">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Deal · {deal.buyer}</p>
-            <h3 className="text-xl font-bold truncate">{deal.domain}</h3>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground truncate">Deal · {deal.buyer}</p>
+            <h3 className="text-lg sm:text-xl font-bold truncate">{deal.domain}</h3>
           </div>
-          <button onClick={onClose} className="p-2 rounded-md hover:bg-muted"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="p-2 rounded-md hover:bg-muted shrink-0"><X className="h-4 w-4" /></button>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="p-4 sm:p-6 space-y-5">
           {/* Stage switcher */}
           <div className="flex items-center gap-1 rounded-lg border border-border p-1 bg-background/60">
             {STAGES.map((s) => (
