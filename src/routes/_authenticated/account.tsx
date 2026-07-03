@@ -78,10 +78,10 @@ function AccountPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-8 h-14 flex items-center gap-4">
+      <header className="sticky top-14 md:top-0 z-20 border-b border-border bg-background/90 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 h-14 flex items-center gap-4">
           <Link to="/dashboard" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground text-xs font-mono uppercase tracking-widest">
-            <ArrowLeft className="h-3.5 w-3.5" /> Back to Portfolio
+            <ArrowLeft className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Back to Portfolio</span><span className="sm:hidden">Back</span>
           </Link>
           <span className="ml-auto text-xs uppercase tracking-widest text-muted-foreground font-mono">/ Account</span>
         </div>
@@ -89,7 +89,7 @@ function AccountPage() {
 
 
 
-      <main className="max-w-6xl mx-auto px-6 py-10 space-y-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-10 space-y-6 md:space-y-8">
         {loading ? (
           <div className="p-12 text-center text-muted-foreground text-sm flex items-center justify-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading account...
@@ -97,22 +97,22 @@ function AccountPage() {
         ) : (
           <>
             {/* Profile hero */}
-            <section className="relative overflow-hidden rounded-3xl border border-border bg-card/70 p-8 bg-grid">
+            <section className="relative overflow-hidden rounded-3xl border border-border bg-card/70 p-5 sm:p-8 bg-grid">
               <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full gradient-brand opacity-20 blur-3xl" />
-              <div className="relative flex flex-col md:flex-row md:items-center gap-6">
-                <div className="h-20 w-20 rounded-2xl gradient-brand glow-cyan flex items-center justify-center text-primary-foreground text-3xl font-bold">
+              <div className="relative flex flex-col md:flex-row md:items-center gap-5 md:gap-6">
+                <div className="h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-2xl gradient-brand glow-cyan flex items-center justify-center text-primary-foreground text-2xl sm:text-3xl font-bold">
                   {user?.email.slice(0, 1).toUpperCase() || "U"}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h1 className="text-2xl font-bold truncate">{user?.email}</h1>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-xs font-mono text-primary">
+                    <h1 className="text-xl sm:text-2xl font-bold truncate min-w-0">{user?.email}</h1>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-xs font-mono text-primary shrink-0">
                       <ShieldCheck className="h-3 w-3" /> {tier}
                     </span>
                   </div>
-                  <div className="mt-2 flex flex-wrap gap-4 text-xs text-muted-foreground font-mono">
+                  <div className="mt-2 flex flex-wrap gap-3 sm:gap-4 text-xs text-muted-foreground font-mono">
                     <span className="inline-flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> Verified</span>
-                    <span className="inline-flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> Member since {memberSince}</span>
+                    <span className="inline-flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Member since</span> {memberSince}</span>
                     <button onClick={copyId} className="inline-flex items-center gap-1.5 hover:text-foreground transition">
                       <Copy className="h-3.5 w-3.5" /> {user?.id.slice(0, 8)}…
                     </button>
