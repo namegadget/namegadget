@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  Zap, Search, LogOut, Plus, TrendingUp, AlertTriangle, Users2,
+  Search, Plus, TrendingUp, AlertTriangle, Users2,
   Sparkles, X, Radio, MessagesSquare, LayoutTemplate, Globe2,
   ShieldCheck, Send, Copy, ExternalLink, Loader2, Activity,
 } from "lucide-react";
