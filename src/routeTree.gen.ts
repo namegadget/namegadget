@@ -12,6 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
+import { Route as AuthenticatedLandersRouteImport } from './routes/_authenticated/landers'
+import { Route as AuthenticatedGadgetLiveRouteImport } from './routes/_authenticated/gadget-live'
+import { Route as AuthenticatedGadgetAiRouteImport } from './routes/_authenticated/gadget-ai'
+import { Route as AuthenticatedDealRoomRouteImport } from './routes/_authenticated/deal-room'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 
@@ -29,6 +34,31 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPortfolioRoute = AuthenticatedPortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLandersRoute = AuthenticatedLandersRouteImport.update({
+  id: '/landers',
+  path: '/landers',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGadgetLiveRoute = AuthenticatedGadgetLiveRouteImport.update({
+  id: '/gadget-live',
+  path: '/gadget-live',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGadgetAiRoute = AuthenticatedGadgetAiRouteImport.update({
+  id: '/gadget-ai',
+  path: '/gadget-ai',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDealRoomRoute = AuthenticatedDealRoomRouteImport.update({
+  id: '/deal-room',
+  path: '/deal-room',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -45,12 +75,22 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/deal-room': typeof AuthenticatedDealRoomRoute
+  '/gadget-ai': typeof AuthenticatedGadgetAiRoute
+  '/gadget-live': typeof AuthenticatedGadgetLiveRoute
+  '/landers': typeof AuthenticatedLandersRoute
+  '/portfolio': typeof AuthenticatedPortfolioRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/deal-room': typeof AuthenticatedDealRoomRoute
+  '/gadget-ai': typeof AuthenticatedGadgetAiRoute
+  '/gadget-live': typeof AuthenticatedGadgetLiveRoute
+  '/landers': typeof AuthenticatedLandersRoute
+  '/portfolio': typeof AuthenticatedPortfolioRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -59,12 +99,35 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/deal-room': typeof AuthenticatedDealRoomRoute
+  '/_authenticated/gadget-ai': typeof AuthenticatedGadgetAiRoute
+  '/_authenticated/gadget-live': typeof AuthenticatedGadgetLiveRoute
+  '/_authenticated/landers': typeof AuthenticatedLandersRoute
+  '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/account' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/account'
+    | '/dashboard'
+    | '/deal-room'
+    | '/gadget-ai'
+    | '/gadget-live'
+    | '/landers'
+    | '/portfolio'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/account' | '/dashboard'
+  to:
+    | '/'
+    | '/auth'
+    | '/account'
+    | '/dashboard'
+    | '/deal-room'
+    | '/gadget-ai'
+    | '/gadget-live'
+    | '/landers'
+    | '/portfolio'
   id:
     | '__root__'
     | '/'
@@ -72,6 +135,11 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/account'
     | '/_authenticated/dashboard'
+    | '/_authenticated/deal-room'
+    | '/_authenticated/gadget-ai'
+    | '/_authenticated/gadget-live'
+    | '/_authenticated/landers'
+    | '/_authenticated/portfolio'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -103,6 +171,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/portfolio': {
+      id: '/_authenticated/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof AuthenticatedPortfolioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/landers': {
+      id: '/_authenticated/landers'
+      path: '/landers'
+      fullPath: '/landers'
+      preLoaderRoute: typeof AuthenticatedLandersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gadget-live': {
+      id: '/_authenticated/gadget-live'
+      path: '/gadget-live'
+      fullPath: '/gadget-live'
+      preLoaderRoute: typeof AuthenticatedGadgetLiveRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gadget-ai': {
+      id: '/_authenticated/gadget-ai'
+      path: '/gadget-ai'
+      fullPath: '/gadget-ai'
+      preLoaderRoute: typeof AuthenticatedGadgetAiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/deal-room': {
+      id: '/_authenticated/deal-room'
+      path: '/deal-room'
+      fullPath: '/deal-room'
+      preLoaderRoute: typeof AuthenticatedDealRoomRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -123,11 +226,21 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDealRoomRoute: typeof AuthenticatedDealRoomRoute
+  AuthenticatedGadgetAiRoute: typeof AuthenticatedGadgetAiRoute
+  AuthenticatedGadgetLiveRoute: typeof AuthenticatedGadgetLiveRoute
+  AuthenticatedLandersRoute: typeof AuthenticatedLandersRoute
+  AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDealRoomRoute: AuthenticatedDealRoomRoute,
+  AuthenticatedGadgetAiRoute: AuthenticatedGadgetAiRoute,
+  AuthenticatedGadgetLiveRoute: AuthenticatedGadgetLiveRoute,
+  AuthenticatedLandersRoute: AuthenticatedLandersRoute,
+  AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
