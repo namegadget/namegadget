@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { animate, stagger, svg } from "animejs";
+import { animate, stagger } from "animejs";
 import { Plane, Music2, Landmark, Newspaper, Camera, Terminal, Home, Sparkles, Trophy, ScrollText, ArrowRight, Check, Zap, TrendingUp } from "lucide-react";
 
 type Val = { low: number; high: number };
