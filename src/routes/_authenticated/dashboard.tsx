@@ -3,10 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  Search, Plus, TrendingUp, AlertTriangle,
+  Search, Plus, TrendingUp, AlertTriangle, Users2,
   Sparkles, X, Radio, MessagesSquare, LayoutTemplate, Globe2,
-  Send, Copy, ExternalLink, Loader2,
-  RefreshCw, Layers, DollarSign, CircleDot, Wallet, Filter,
+  ShieldCheck, Send, Copy, ExternalLink, Loader2,
+  RefreshCw, Layers, Wallet, Filter, CircleDot,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { LanderGallery } from "@/components/landers";
