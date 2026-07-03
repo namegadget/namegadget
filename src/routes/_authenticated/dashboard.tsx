@@ -360,21 +360,21 @@ function GadgetDrawer({ domain, onClose }: { domain: Domain; onClose: () => void
       <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-2xl h-full bg-card border-l border-border shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-300"
+        className="relative w-full max-w-full sm:max-w-2xl h-full bg-card border-l border-border shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-300"
       >
-        <div className="sticky top-0 z-10 bg-card/95 backdrop-blur border-b border-border px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 z-10 bg-card/95 backdrop-blur border-b border-border px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-xs text-primary uppercase tracking-wider">
               <Sparkles className="h-3.5 w-3.5" /> gadget suite
             </div>
-            <h3 className="text-xl font-bold truncate text-glow">{domain.domain_name}</h3>
+            <h3 className="text-lg sm:text-xl font-bold truncate text-glow">{domain.domain_name}</h3>
           </div>
-          <button onClick={onClose} className="p-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground">
+          <button onClick={onClose} className="p-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground shrink-0">
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="px-6 pt-4">
+        <div className="px-4 sm:px-6 pt-4">
           <div className="inline-flex flex-wrap rounded-lg border border-border bg-background/60 p-1 text-xs">
             <TabBtn active={tab === "gadget"} onClick={() => setTab("gadget")} icon={Sparkles}>gadget AI</TabBtn>
             <TabBtn active={tab === "tech"} onClick={() => setTab("tech")} icon={Layers}>Tech Profile</TabBtn>
