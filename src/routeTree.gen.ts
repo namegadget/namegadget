@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
+import { Route as AuthenticatedGadgetAiRouteImport } from './routes/_authenticated/gadget-ai'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 
@@ -35,6 +36,11 @@ const AuthenticatedPortfolioRoute = AuthenticatedPortfolioRouteImport.update({
   path: '/portfolio',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedGadgetAiRoute = AuthenticatedGadgetAiRouteImport.update({
+  id: '/gadget-ai',
+  path: '/gadget-ai',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/gadget-ai': typeof AuthenticatedGadgetAiRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
 }
 export interface FileRoutesByTo {
@@ -58,6 +65,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/gadget-ai': typeof AuthenticatedGadgetAiRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
 }
 export interface FileRoutesById {
@@ -67,13 +75,20 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/gadget-ai': typeof AuthenticatedGadgetAiRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/account' | '/dashboard' | '/portfolio'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/account'
+    | '/dashboard'
+    | '/gadget-ai'
+    | '/portfolio'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/account' | '/dashboard' | '/portfolio'
+  to: '/' | '/auth' | '/account' | '/dashboard' | '/gadget-ai' | '/portfolio'
   id:
     | '__root__'
     | '/'
@@ -81,6 +96,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/account'
     | '/_authenticated/dashboard'
+    | '/_authenticated/gadget-ai'
     | '/_authenticated/portfolio'
   fileRoutesById: FileRoutesById
 }
@@ -120,6 +136,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPortfolioRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/gadget-ai': {
+      id: '/_authenticated/gadget-ai'
+      path: '/gadget-ai'
+      fullPath: '/gadget-ai'
+      preLoaderRoute: typeof AuthenticatedGadgetAiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -140,12 +163,14 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedGadgetAiRoute: typeof AuthenticatedGadgetAiRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedGadgetAiRoute: AuthenticatedGadgetAiRoute,
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
 }
 
