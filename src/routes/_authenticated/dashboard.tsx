@@ -809,7 +809,7 @@ function GadgetView({ domain }: { domain: Domain }) {
     const r = await appraise({ data: { domain: domain.domain_name } });
     setLoading(false);
     if (r.ok) {
-      const { ok: _ok, error: _e, ...rest } = r;
+      const { ok: _ok, ...rest } = r;
       setData(rest as AppraisalData);
     } else setError(r.error);
   }
