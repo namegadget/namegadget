@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "7a615912-706f-4959-9bfd-2bce59c9c912",
-  "project_id": "b1422d76-3a64-4298-92de-774372226d5a",
-  "url": "/__l5e/assets-v1/7a615912-706f-4959-9bfd-2bce59c9c912/darkmodelogo.png",
-  "r2_key": "a/v1/b1422d76-3a64-4298-92de-774372226d5a/7a615912-706f-4959-9bfd-2bce59c9c912/darkmodelogo.png",
-  "original_filename": "darkmodelogo.png",
-  "size": 32527,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-03T05:02:18Z"
+  "created_at": "2026-07-03T05:02:18Z",
+  "original_filename": "darkmodelogo.png",
+  "project_id": "97746561-517d-4a5d-b865-28d6f27c8c7a",
+  "r2_key": "a/v1/97746561-517d-4a5d-b865-28d6f27c8c7a/7a615912-706f-4959-9bfd-2bce59c9c912/darkmodelogo.png",
+  "size": 32527,
+  "url": "/__l5e/assets-v1/7a615912-706f-4959-9bfd-2bce59c9c912/darkmodelogo.png",
+  "version": 1
 }
