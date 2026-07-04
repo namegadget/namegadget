@@ -122,7 +122,7 @@ function deriveKeyword(domain: string) {
 
 function clampScore(score: unknown) {
   const number = toNumber(score, 3);
-  return Math.max(1, Math.min(5, number > 5 ? Math.round(number / 20) : Math.round(number)));
+  return Math.max(1, Math.min(5, number > 10 ? Math.round(number / 4) : number > 5 ? Math.round(number / 2) : Math.round(number)));
 }
 
 function statusToneFrom(status: string) {
