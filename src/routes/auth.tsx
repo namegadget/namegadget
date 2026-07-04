@@ -33,7 +33,10 @@ function GoogleGlyph({ className = "h-5 w-5" }: { className?: string }) {
 function AuthPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("identify");
+  const [mode, setMode] = useState<"otp" | "password">("otp");
+  const [passwordMode, setPasswordMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
