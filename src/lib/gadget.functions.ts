@@ -223,7 +223,9 @@ function buildFallbackAppraisal(domain: string, raw: Record<string, unknown>): A
   });
   const brandScoreTotal = brandScores.reduce((sum, row) => sum + row.score, 0);
 
-  const longTermItems = toArray(raw.longTerm?.["thesis" as never] ?? raw.longTermThesisAndCatalysts).slice(0, 5).map((item, index) => {
+  const longTermSource = raw.longTerm as Record<string, unknown> | undefined;
+  const reportMetadata = raw.report_metadata as Record<string, unknown> | undefined;
+  const longTermItems = toArray(longTermSource?.thesis ?? raw.longTermThesisAndCatalysts).slice(0, 5).map((item, index) => {
     const row = item as Record<string, unknown>;
     return {
       title: toStringValue(row.title ?? row.catalyst, ["Category authority", "Premium scarcity", "Buyer consolidation", "Cross-border demand", "Platform optionality"][index] ?? "Growth catalyst"),
@@ -241,7 +243,7 @@ function buildFallbackAppraisal(domain: string, raw: Record<string, unknown>): A
 
   return {
     meaning,
-    algorithm: toStringValue(raw.algorithm ?? raw.report_metadata?.["valuation_model" as never], "DomainIQ-Pro v2"),
+    algorithm: toStringValue(raw.algorithm ?? reportMetadata?.valuation_model, "DomainIQ-Pro v2"),
     insights: [
       { tone: "market", icon: "📈", title: "Exact-match commercial demand", body: rationale },
       { tone: "scarcity", icon: "💎", title: "Short premium .com scarcity", body: `${normalizedDomain} combines ${keyword.length}-character brevity with the most trusted global extension.` },
@@ -318,6 +320,22 @@ Requirements:
 - Long-term thesis and catalysts must be specific: name real companies, funding rounds, regulations, demographic trends, TLD math, or ecosystem lock-in effects that make this domain appreciate over 3-7 years.
 - Today's date: ${new Date().toISOString().slice(0, 10)}.
 Return ONLY valid JSON using these exact top-level keys: meaning, algorithm, insights, marketValue, suggestedLow, suggestedHigh, valueBasis, confidence, ecosystem, comparableSales, pricingContext, webPresence, altExtensions, altExtensionAnalysis, brandScores, brandScoreTotal, longTerm, rationale, leads, geography.
+Schema summary:
+{
+  "meaning": "string", "algorithm": "string",
+  "insights": [{ "tone": "market|scarcity|dual|trademark|trend", "icon": "emoji", "title": "string", "body": "string" }],
+  "marketValue": 0, "suggestedLow": 0, "suggestedHigh": 0, "valueBasis": "string", "confidence": 0,
+  "ecosystem": { "keyword": "string", "totalTlds": 0, "totalNames": 0, "interpretation": "MASSIVE|LARGE|MEDIUM|NICHE", "extensionsCsv": "string", "analysis": "string" },
+  "comparableSales": [{ "name": "domain", "price": 0, "date": "YYYY-MM-DD", "venue": "string", "relevance": "THIS DOMAIN|CONTAINS|RELATED" }],
+  "pricingContext": "string",
+  "webPresence": { "searchNotes": ["string"], "usageStats": ["string"], "multiCountry": "string", "majorPlatforms": "string" },
+  "altExtensions": [{ "domain": "string", "status": "string", "statusTone": "developed|active|registered|none", "notes": "string" }],
+  "altExtensionAnalysis": "string",
+  "brandScores": [{ "component": "Pronunciation|Memorability|Brevity|Brandability|Industry Fit", "score": 1, "rationale": "string" }],
+  "brandScoreTotal": 0,
+  "longTerm": { "projected": 0, "rangeLow": 0, "rangeHigh": 0, "thesis": [{ "title": "string", "body": "string" }], "catalysts": ["string"] },
+  "rationale": "string", "leads": [{ "company": "string", "industry": "string", "match": 80, "reason": "string" }], "geography": [{ "region": "string", "pct": 0 }]
+}
 Do not use alternate names like executiveSummary, valuation_tiers, brand_score_breakdown, or market_comparables. No markdown. No filler, no hedging.`;
 
     const tryGenerate = (model: string) =>
