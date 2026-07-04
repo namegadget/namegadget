@@ -99,11 +99,7 @@ export const appraiseDomain = createServerFn({ method: "POST" })
   .inputValidator((d: { domain: string }) => z.object({ domain: z.string().min(3) }).parse(d))
   .handler(async ({ data }) => {
     const gateway = getGateway();
-    try {
-      const { output } = await generateText({
-        model: gateway(MODEL),
-        output: Output.object({ schema: AppraisalSchema }),
-        prompt: `You are DomainIQ-Pro, a senior domain-industry appraiser combining Estibot, GoDaddy Appraisals, NameBio, DotDB, and BuiltWith methodologies. Produce a FULL institutional-grade appraisal report for the domain: "${data.domain}".
+    const prompt = `You are DomainIQ-Pro, a senior domain-industry appraiser combining Estibot, GoDaddy Appraisals, NameBio, DotDB, and BuiltWith methodologies. Produce a FULL institutional-grade appraisal report for the domain: "${data.domain}".
 
 Requirements:
 - Be concrete and evidence-based. Cite real markets, real acronyms, real regulations, real platforms (Stripe, HubSpot, Wikipedia, GitHub, etc.) that plausibly reference this term.
@@ -113,18 +109,68 @@ Requirements:
 - Brand Score Breakdown must include exactly these 5 components in this order: Pronunciation, Memorability, Brevity, Brandability, Industry Fit. brandScoreTotal must equal the sum.
 - Long-term thesis and catalysts must be specific: name real companies, funding rounds, regulations, demographic trends, TLD math, or ecosystem lock-in effects that make this domain appreciate over 3-7 years.
 - Today's date: ${new Date().toISOString().slice(0, 10)}.
-No filler, no hedging language, no "may" or "could" without a reason.`,
+Return valid JSON matching the schema. No filler, no hedging.`;
+
+    const tryGenerate = (model: string) =>
+      generateText({
+        model: gateway(model),
+        output: Output.object({ schema: AppraisalSchema }),
+        maxOutputTokens: 8000,
+        prompt,
       });
+
+    const finalize = (output: z.infer<typeof AppraisalSchema>) => {
       const totalPct = output.geography.reduce((s, g) => s + g.pct, 0) || 1;
       const geography = output.geography.map((g) => ({ ...g, pct: Math.round((g.pct / totalPct) * 100) }));
       return { ok: true as const, ...output, geography };
-    } catch (err) {
-      if (NoObjectGeneratedError.isInstance(err)) {
-        return { ok: false as const, error: "AI returned malformed data. Try again." };
+    };
+
+    const tryParseFallback = (text: string | undefined) => {
+      if (!text) return null;
+      let cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+      const start = cleaned.search(/[\{\[]/);
+      const end = cleaned.lastIndexOf("}");
+      if (start === -1 || end === -1) return null;
+      cleaned = cleaned.substring(start, end + 1);
+      const attempts = [
+        cleaned,
+        cleaned.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]").replace(/[\x00-\x1F\x7F]/g, ""),
+      ];
+      for (const c of attempts) {
+        try {
+          const parsed = JSON.parse(c);
+          const v = AppraisalSchema.safeParse(parsed);
+          if (v.success) return v.data;
+        } catch {
+          /* continue */
+        }
       }
-      const message = err instanceof Error ? err.message : "Unknown error";
-      return { ok: false as const, error: message };
+      return null;
+    };
+
+    const attempt = async (model: string): Promise<
+      { ok: true; output: z.infer<typeof AppraisalSchema> } | { ok: false; retryable: boolean; error: string }
+    > => {
+      try {
+        const { output } = await tryGenerate(model);
+        return { ok: true, output };
+      } catch (err) {
+        if (NoObjectGeneratedError.isInstance(err)) {
+          const fallback = tryParseFallback(err.text);
+          if (fallback) return { ok: true, output: fallback };
+          return { ok: false, retryable: true, error: "AI returned malformed data." };
+        }
+        const message = err instanceof Error ? err.message : "Unknown error";
+        return { ok: false, retryable: false, error: message };
+      }
+    };
+
+    let result = await attempt(MODEL);
+    if (!result.ok && result.retryable) {
+      result = await attempt("google/gemini-2.5-flash");
     }
+    if (!result.ok) return { ok: false as const, error: result.error };
+    return finalize(result.output);
   });
 
 /* ---------- TECH PROFILE ---------- */
