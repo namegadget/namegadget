@@ -90,7 +90,7 @@ export const updateDealAmounts = createServerFn({ method: "POST" })
     }).parse(raw)
   )
   .handler(async ({ data, context }) => {
-    const patch: Record<string, number | null> = {};
+    const patch: { offer?: number; counter?: number } = {};
     if (data.offer !== undefined) patch.offer = data.offer;
     if (data.counter !== undefined) patch.counter = data.counter;
     if (Object.keys(patch).length === 0) return { ok: true as const };

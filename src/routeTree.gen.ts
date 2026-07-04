@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DDomainRouteImport } from './routes/d.$domain'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as AuthenticatedLandersRouteImport } from './routes/_authenticated/landers'
 import { Route as AuthenticatedGadgetLiveRouteImport } from './routes/_authenticated/gadget-live'
@@ -19,6 +20,7 @@ import { Route as AuthenticatedGadgetAiRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedDealRoomRouteImport } from './routes/_authenticated/deal-room'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as ApiPublicWebhooksEscrowRouteImport } from './routes/api/public/webhooks/escrow'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -32,6 +34,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DDomainRoute = DDomainRouteImport.update({
+  id: '/d/$domain',
+  path: '/d/$domain',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedPortfolioRoute = AuthenticatedPortfolioRouteImport.update({
@@ -69,6 +76,11 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicWebhooksEscrowRoute = ApiPublicWebhooksEscrowRouteImport.update({
+  id: '/api/public/webhooks/escrow',
+  path: '/api/public/webhooks/escrow',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -80,6 +92,8 @@ export interface FileRoutesByFullPath {
   '/gadget-live': typeof AuthenticatedGadgetLiveRoute
   '/landers': typeof AuthenticatedLandersRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
+  '/d/$domain': typeof DDomainRoute
+  '/api/public/webhooks/escrow': typeof ApiPublicWebhooksEscrowRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -91,6 +105,8 @@ export interface FileRoutesByTo {
   '/gadget-live': typeof AuthenticatedGadgetLiveRoute
   '/landers': typeof AuthenticatedLandersRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
+  '/d/$domain': typeof DDomainRoute
+  '/api/public/webhooks/escrow': typeof ApiPublicWebhooksEscrowRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,6 +120,8 @@ export interface FileRoutesById {
   '/_authenticated/gadget-live': typeof AuthenticatedGadgetLiveRoute
   '/_authenticated/landers': typeof AuthenticatedLandersRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
+  '/d/$domain': typeof DDomainRoute
+  '/api/public/webhooks/escrow': typeof ApiPublicWebhooksEscrowRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,6 +135,8 @@ export interface FileRouteTypes {
     | '/gadget-live'
     | '/landers'
     | '/portfolio'
+    | '/d/$domain'
+    | '/api/public/webhooks/escrow'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -128,6 +148,8 @@ export interface FileRouteTypes {
     | '/gadget-live'
     | '/landers'
     | '/portfolio'
+    | '/d/$domain'
+    | '/api/public/webhooks/escrow'
   id:
     | '__root__'
     | '/'
@@ -140,12 +162,16 @@ export interface FileRouteTypes {
     | '/_authenticated/gadget-live'
     | '/_authenticated/landers'
     | '/_authenticated/portfolio'
+    | '/d/$domain'
+    | '/api/public/webhooks/escrow'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DDomainRoute: typeof DDomainRoute
+  ApiPublicWebhooksEscrowRoute: typeof ApiPublicWebhooksEscrowRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -169,6 +195,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/d/$domain': {
+      id: '/d/$domain'
+      path: '/d/$domain'
+      fullPath: '/d/$domain'
+      preLoaderRoute: typeof DDomainRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/portfolio': {
@@ -220,6 +253,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/webhooks/escrow': {
+      id: '/api/public/webhooks/escrow'
+      path: '/api/public/webhooks/escrow'
+      fullPath: '/api/public/webhooks/escrow'
+      preLoaderRoute: typeof ApiPublicWebhooksEscrowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -250,17 +290,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  DDomainRoute: DDomainRoute,
+  ApiPublicWebhooksEscrowRoute: ApiPublicWebhooksEscrowRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
