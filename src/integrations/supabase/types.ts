@@ -14,6 +14,100 @@ export type Database = {
   }
   public: {
     Tables: {
+      deal_messages: {
+        Row: {
+          body: string
+          created_at: string
+          cta_url: string | null
+          deal_id: string
+          id: string
+          sender_id: string | null
+          sender_role: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          cta_url?: string | null
+          deal_id: string
+          id?: string
+          sender_id?: string | null
+          sender_role: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          cta_url?: string | null
+          deal_id?: string
+          id?: string
+          sender_id?: string | null
+          sender_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_messages_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deals: {
+        Row: {
+          buyer_email: string
+          buyer_id: string | null
+          buyer_name: string | null
+          counter: number | null
+          created_at: string
+          domain_id: string
+          domain_name: string
+          escrow_transaction_id: string | null
+          id: string
+          offer: number
+          seller_id: string
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          buyer_email: string
+          buyer_id?: string | null
+          buyer_name?: string | null
+          counter?: number | null
+          created_at?: string
+          domain_id: string
+          domain_name: string
+          escrow_transaction_id?: string | null
+          id?: string
+          offer?: number
+          seller_id: string
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          buyer_email?: string
+          buyer_id?: string | null
+          buyer_name?: string | null
+          counter?: number | null
+          created_at?: string
+          domain_id?: string
+          domain_name?: string
+          escrow_transaction_id?: string | null
+          id?: string
+          offer?: number
+          seller_id?: string
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deals_domain_id_fkey"
+            columns: ["domain_id"]
+            isOneToOne: false
+            referencedRelation: "domains"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       domains: {
         Row: {
           appraised_value: number | null
@@ -21,8 +115,10 @@ export type Database = {
           domain_name: string
           expiry_date: string
           id: string
+          price: number | null
           registrar: string
           status: string
+          updated_at: string
           user_id: string
           visitor_count: number
         }
@@ -32,8 +128,10 @@ export type Database = {
           domain_name: string
           expiry_date: string
           id?: string
+          price?: number | null
           registrar: string
           status?: string
+          updated_at?: string
           user_id: string
           visitor_count?: number
         }
@@ -43,19 +141,99 @@ export type Database = {
           domain_name?: string
           expiry_date?: string
           id?: string
+          price?: number | null
           registrar?: string
           status?: string
+          updated_at?: string
           user_id?: string
           visitor_count?: number
         }
         Relationships: []
+      }
+      escrow_transactions: {
+        Row: {
+          amount: number
+          broker_tip_bps: number
+          buyer_email: string
+          created_at: string
+          currency: string
+          deal_id: string | null
+          domain_id: string | null
+          domain_name: string
+          fee_allocation: string
+          id: string
+          landing_url: string | null
+          payment_url: string | null
+          raw: Json | null
+          seller_email: string
+          seller_id: string | null
+          status: string
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          broker_tip_bps?: number
+          buyer_email: string
+          created_at?: string
+          currency?: string
+          deal_id?: string | null
+          domain_id?: string | null
+          domain_name: string
+          fee_allocation?: string
+          id?: string
+          landing_url?: string | null
+          payment_url?: string | null
+          raw?: Json | null
+          seller_email: string
+          seller_id?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          broker_tip_bps?: number
+          buyer_email?: string
+          created_at?: string
+          currency?: string
+          deal_id?: string | null
+          domain_id?: string | null
+          domain_name?: string
+          fee_allocation?: string
+          id?: string
+          landing_url?: string | null
+          payment_url?: string | null
+          raw?: Json | null
+          seller_email?: string
+          seller_id?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escrow_transactions_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escrow_transactions_domain_id_fkey"
+            columns: ["domain_id"]
+            isOneToOne: false
+            referencedRelation: "domains"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_deal_participant: { Args: { _deal_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
