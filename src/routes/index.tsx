@@ -599,21 +599,26 @@ function Landing() {
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
               Up and running in <span className="gradient-brand bg-clip-text text-transparent">under 2 minutes</span>.
             </h2>
+            <p className="mt-4 text-muted-foreground max-w-2xl mx-auto text-sm md:text-base">
+              No CSV imports. No CRM setup. No sales calls. Four steps from signup to your first buyer ping — most
+              investors finish before their coffee cools.
+            </p>
           </div>
 
-          <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-4">
+          <div className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-4">
             {/* Step 01 */}
             <div className="relative">
               <div className="workflow-card opacity-0 rounded-2xl border border-border bg-card p-6 h-full">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-mono text-muted-foreground tracking-widest">STEP 01</span>
+                  <span className="text-[10px] font-mono text-muted-foreground tracking-widest">STEP 01 · ~30s</span>
                   <div className="h-9 w-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
                     <Plus className="h-4 w-4 text-primary" />
                   </div>
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Add your assets</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  Paste a domain — RDAP + DNS enrich it instantly with registrar, expiry and traffic signals.
+                  Paste a domain or upload a list. RDAP + DNS enrich each one with registrar, expiry, TLD ecosystem
+                  and traffic signals — no manual tagging.
                 </p>
                 <div className="rounded-lg border border-border bg-secondary/60 p-2 flex items-center gap-2">
                   <Globe className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -621,21 +626,22 @@ function Landing() {
                   <span className="text-[10px] font-mono text-primary bg-primary/10 border border-primary/30 rounded px-1.5 py-0.5">+ADD</span>
                 </div>
               </div>
-              <div className="workflow-line hidden md:block absolute top-1/2 -right-2 w-4 h-px bg-primary/40 origin-left" />
+              <div className="workflow-line hidden lg:block absolute top-1/2 -right-2 w-4 h-px bg-primary/40 origin-left" />
             </div>
 
             {/* Step 02 */}
             <div className="relative">
               <div className="workflow-card opacity-0 rounded-2xl border border-border bg-card p-6 h-full">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-mono text-muted-foreground tracking-widest">STEP 02</span>
+                  <span className="text-[10px] font-mono text-muted-foreground tracking-widest">STEP 02 · ~45s</span>
                   <div className="h-9 w-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
                     <Code2 className="h-4 w-4 text-primary" />
                   </div>
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Deploy landers</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  Drop our motion-tracking tag. Every visit, click and country is captured in real time.
+                  One-click deploy branded for-sale pages, or drop our motion-tracking tag on your own. Every visit,
+                  click and country is captured live.
                 </p>
                 <button
                   onClick={copyScript}
@@ -645,21 +651,22 @@ function Landing() {
                   {copied ? <Check className="h-3.5 w-3.5 text-primary shrink-0" /> : <Copy className="h-3.5 w-3.5 text-white/60 shrink-0" />}
                 </button>
               </div>
-              <div className="workflow-line hidden md:block absolute top-1/2 -right-2 w-4 h-px bg-primary/40 origin-left" />
+              <div className="workflow-line hidden lg:block absolute top-1/2 -right-2 w-4 h-px bg-primary/40 origin-left" />
             </div>
 
             {/* Step 03 */}
             <div className="relative">
               <div className="workflow-card opacity-0 rounded-2xl border border-border bg-card p-6 h-full">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-mono text-muted-foreground tracking-widest">STEP 03</span>
+                  <span className="text-[10px] font-mono text-muted-foreground tracking-widest">STEP 03 · live</span>
                   <div className="h-9 w-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
                     <LineChartIcon className="h-4 w-4 text-primary" />
                   </div>
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Watch it live</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  Inbound clicks, geo signals, and offer-ready buyers ping into your deal room.
+                  Inbound clicks, geo signals, referrer and intent score ping into your dashboard the moment they
+                  happen. Filter by TLD, buyer country, or lander.
                 </p>
                 <div className="space-y-1.5">
                   {[
@@ -677,7 +684,36 @@ function Landing() {
                   ))}
                 </div>
               </div>
+              <div className="workflow-line hidden lg:block absolute top-1/2 -right-2 w-4 h-px bg-primary/40 origin-left" />
             </div>
+
+            {/* Step 04 */}
+            <div className="relative">
+              <div className="workflow-card opacity-0 rounded-2xl border border-border bg-card p-6 h-full">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[10px] font-mono text-muted-foreground tracking-widest">STEP 04 · 0% fee</span>
+                  <div className="h-9 w-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+                    <Handshake className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Close &amp; get paid</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  Negotiate in the deal room, trigger Escrow / Atompay / Safepay in one click. Funds move buyer → you.
+                  We never touch them.
+                </p>
+                <div className="rounded-lg border border-primary/30 bg-primary/5 p-2.5 flex items-center gap-2">
+                  <Wallet className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span className="text-xs font-mono text-foreground flex-1">$18,400 → your account</span>
+                  <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" /> No credit card to start</span>
+            <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" /> Import up to 500 domains free</span>
+            <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" /> Cancel anytime</span>
           </div>
         </div>
       </section>
