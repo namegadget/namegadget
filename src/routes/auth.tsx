@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { animate, stagger } from "animejs";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { Loader2, Mail, ArrowLeft, ShieldCheck, KeyRound } from "lucide-react";
+import { Loader2, Mail, ArrowLeft, ShieldCheck, KeyRound, Lock } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png.asset.json";
 import {
