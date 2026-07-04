@@ -53,29 +53,31 @@ export const createEscrowTransaction = createServerFn({ method: "POST" })
       : data.feeAllocation === "seller" ? sellerEmail
       : null; // split: omit → Escrow default (typically 50/50)
 
+    const schedule: Array<Record<string, string>> = [
+      {
+        amount: amountStr,
+        payer_customer: data.buyerEmail,
+        beneficiary_customer: sellerEmail,
+      },
+    ];
+    if (brokerFee > 0) {
+      schedule.push({
+        amount: brokerFee.toFixed(2),
+        payer_customer: data.buyerEmail,
+        beneficiary_customer: brokerEmail,
+      });
+    }
+
     const item: Record<string, unknown> = {
       title: data.domain,
       description: `Domain name transfer: ${data.domain}`,
       type: "domain_name",
       inspection_period: inspectionSecs,
       quantity: 1,
-      schedule: [
-        {
-          amount: amountStr,
-          payer_customer: data.buyerEmail,
-          beneficiary_customer: sellerEmail,
-        },
-      ],
+      schedule,
     };
     if (feePayer) {
       item.fees = [{ type: "escrow", payer_customer: feePayer }];
-    }
-    if (brokerFee > 0) {
-      item.schedule.push({
-        amount: brokerFee.toFixed(2),
-        payer_customer: data.buyerEmail,
-        beneficiary_customer: brokerEmail,
-      });
     }
 
     const payload = {
