@@ -121,6 +121,32 @@ function AuthPage() {
     }
   }
 
+  async function submitPassword(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!email || !password) return;
+    setLoading(true);
+    try {
+      if (passwordMode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+        });
+        if (error) throw error;
+        toast.success("Account created. Check your email if confirmation is required.");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast.success("Welcome back.");
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Authentication failed";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background bg-grid relative flex items-center justify-center px-4 py-10 overflow-hidden">
       {/* ambient */}
