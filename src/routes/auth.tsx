@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { animate, stagger } from "animejs";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { Loader2, Mail, ArrowLeft, ShieldCheck, KeyRound } from "lucide-react";
+import { Loader2, Mail, ArrowLeft, ShieldCheck, KeyRound, Lock } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png.asset.json";
 import {
@@ -33,7 +33,10 @@ function GoogleGlyph({ className = "h-5 w-5" }: { className?: string }) {
 function AuthPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("identify");
+  const [mode, setMode] = useState<"otp" | "password">("otp");
+  const [passwordMode, setPasswordMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -118,6 +121,32 @@ function AuthPage() {
     }
   }
 
+  async function submitPassword(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!email || !password) return;
+    setLoading(true);
+    try {
+      if (passwordMode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+        });
+        if (error) throw error;
+        toast.success("Account created. Check your email if confirmation is required.");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast.success("Welcome back.");
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Authentication failed";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background bg-grid relative flex items-center justify-center px-4 py-10 overflow-hidden">
       {/* ambient */}
@@ -178,42 +207,110 @@ function AuthPage() {
                   <div className="h-px flex-1 bg-border" />
                 </div>
 
-                {/* email OTP request */}
-                <form onSubmit={sendOtp} className="space-y-3">
-                  <div className="auth-el">
-                    <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
-                      Email
-                    </label>
-                    <div className="mt-1.5 relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <input
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@fund.io"
-                        className="w-full rounded-xl border border-input bg-background pl-9 pr-3 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition"
-                      />
-                    </div>
-                  </div>
-
+                {/* mode toggle */}
+                <div className="auth-el mb-3 flex rounded-lg border border-border bg-background p-0.5 text-xs">
                   <button
-                    type="submit"
-                    disabled={loading || googleLoading}
-                    className="auth-el w-full inline-flex items-center justify-center gap-2 rounded-xl gradient-brand text-primary-foreground px-4 py-3 text-sm font-semibold glow-cyan hover:opacity-95 disabled:opacity-60 transition"
+                    type="button"
+                    onClick={() => setMode("otp")}
+                    className={`flex-1 rounded-md px-3 py-1.5 font-medium transition ${mode === "otp" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"}`}
                   >
-                    {loading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <KeyRound className="h-4 w-4" />
-                    )}
-                    Send secure code
+                    Email code
                   </button>
-                </form>
+                  <button
+                    type="button"
+                    onClick={() => setMode("password")}
+                    className={`flex-1 rounded-md px-3 py-1.5 font-medium transition ${mode === "password" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Password
+                  </button>
+                </div>
 
-                <p className="auth-el mt-6 text-center text-[11px] text-muted-foreground">
-                  We'll email a 6-digit code. No passwords. No brokers. Ever.
-                </p>
+                {mode === "otp" ? (
+                  <form onSubmit={sendOtp} className="space-y-3">
+                    <div className="auth-el">
+                      <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+                        Email
+                      </label>
+                      <div className="mt-1.5 relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <input
+                          type="email"
+                          required
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="you@fund.io"
+                          className="w-full rounded-xl border border-input bg-background pl-9 pr-3 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading || googleLoading}
+                      className="auth-el w-full inline-flex items-center justify-center gap-2 rounded-xl gradient-brand text-primary-foreground px-4 py-3 text-sm font-semibold glow-cyan hover:opacity-95 disabled:opacity-60 transition"
+                    >
+                      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+                      Send secure code
+                    </button>
+                  </form>
+                ) : (
+                  <form onSubmit={submitPassword} className="space-y-3">
+                    <div className="auth-el">
+                      <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+                        Email
+                      </label>
+                      <div className="mt-1.5 relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <input
+                          type="email"
+                          required
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="you@fund.io"
+                          className="w-full rounded-xl border border-input bg-background pl-9 pr-3 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition"
+                        />
+                      </div>
+                    </div>
+                    <div className="auth-el">
+                      <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+                        Password
+                      </label>
+                      <div className="mt-1.5 relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <input
+                          type="password"
+                          required
+                          minLength={6}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full rounded-xl border border-input bg-background pl-9 pr-3 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading || googleLoading}
+                      className="auth-el w-full inline-flex items-center justify-center gap-2 rounded-xl gradient-brand text-primary-foreground px-4 py-3 text-sm font-semibold glow-cyan hover:opacity-95 disabled:opacity-60 transition"
+                    >
+                      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
+                      {passwordMode === "signin" ? "Sign in" : "Create account"}
+                    </button>
+
+                    <p className="auth-el text-center text-[11px] text-muted-foreground">
+                      {passwordMode === "signin" ? "New here?" : "Already have an account?"}{" "}
+                      <button
+                        type="button"
+                        onClick={() => setPasswordMode(passwordMode === "signin" ? "signup" : "signin")}
+                        className="text-primary hover:underline font-medium"
+                      >
+                        {passwordMode === "signin" ? "Create account" : "Sign in"}
+                      </button>
+                    </p>
+                  </form>
+                )}
+
               </>
             ) : (
               <>
