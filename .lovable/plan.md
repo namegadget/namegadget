@@ -1,41 +1,73 @@
-This is ~9 major feature areas. Shipping it all in one turn would produce shallow, buggy code across the whole app. I'll break it into 4 waves so each wave is verifiable and preserves the brand DNA (light theme, emerald accents, solid borders, mono eyebrows, no gradients, rounded-square logo).
 
-## Wave 1 — Foundations & UI polish (this turn if you approve)
-- **Loading skeletons**: shared `<RowSkeleton/>`, `<CardSkeleton/>`, `<ChatSkeleton/>` reused on dashboard, portfolio, deal room, gadget, profiles.
-- **Row button UX**: bigger hit target, hover/active states, focus ring, tooltip, keyboard accessible. Applied to portfolio + dashboard rows.
-- **Dashboard domain table** in the exact order you specified: `Domain (+copy, favicon) · Visitors (sparkline) · Expiry countdown (red<30 / orange<90 / green) · Gadget+ button · Lander select · Registrar badge`. Visitors + expiry pulled from real data (visits table + RDAP cache). Lander select writes back to DB immediately.
-- **Rounded-square logo** everywhere (sidebar, root head, favicons stay as-is).
-- **Deal Room split layout** cleanup: left = domain/terms/escrow panel, right = chat timeline, distinct system-message bubbles, sticky "Generate Escrow Payment" action bar.
-- **Real-time**: subscribe to `deals`, `messages`, `visits` via Supabase realtime channels (already available). Countdown clocks use a single `useCountdown` hook.
+# Plan — NameGadget system upgrade (Waves 2–4)
 
-## Wave 2 — Gadget Hub: Outbound + Leaflet
-Analyzing the NameMaxi screenshots: it's a lead-finder that takes a domain, runs Lite (fast domain-similarity) or Deep ($0.05, web-content) search, returns 3 tabs — **Domain Match / Content Match / Filtered** — each row = score /5, title, snippet, `Try 5 / Try 20` (or `Extract 5/20`) buttons that scrape emails, plus `Report Not Relevant` + `Visit Site`. I'll replicate that inside `/gadget-ai`:
-- New Outbound tab next to the appraisal report.
-- Server fn `findOutboundLeads({ domain, mode })` using **Lovable AI Gateway** (`google/gemini-2.5-flash`) with a tool that calls a web-search endpoint — no external Serper key required. If you later add a Serper key I'll swap it in.
-- Email + phone extraction via regex on fetched page HTML (server-side fetch inside the server fn); results stored in `outbound_leads` table so they're downloadable/copyable across sessions.
-- Export: CSV download + one-click copy per row and per bulk selection.
-- **Leaflet live visitor map** on the Gadget page: install `leaflet` + `react-leaflet`, feed it markers from the `visits` table (city/lat/lng captured by tracking pixel). Light + dark tile skins matching brand.
-- New tracking pixel route `/api/public/track/:landerId` inserts a `visits` row with geo-IP (Cloudflare `cf` headers → country/city/lat/lng, no external service).
+Wave 1 (dashboard rebuild — Domain · Visitors · Expiry · Gadget+ · Lander select · Registrar, real-time sync, rounded-square logo, MCP server with `find_leads` + `visitor_stats` + pagination on dashboard/portfolio) is already live. This plan covers everything still pending, with sensible defaults chosen so we can start immediately.
 
-## Wave 3 — Profiles, Buyer accounts, Verification, 2FA
-- Public profile route `/u/$handle` — bio, avatar, star rating, transaction count, verification badges, domain portfolio grid. SSR-safe, public read policy.
-- `profiles` extended with `handle`, `bio`, `rating`, `verification_tier` (`none|verified|top_broker|identity`).
-- Buyer dashboard sections under `/_authenticated/buyer/`: Watchlist, Offers (all/active/accepted/countered), Invoices (from escrow webhook history), Currency preference.
-- Settings → Security section with 2FA toggle, QR modal, backup codes, TOTP verify input (frontend states + Supabase MFA enroll/verify calls).
+## Wave 2 — Gadget Hub: Outbound engine + Leaflet live map
 
-## Wave 4 — Plans + Admin panel
-- Pricing page + billing dashboard: Free / Pro Founder / Elite Portfolio, plan limits table, upgrade CTA. UI-only unless you say wire Stripe.
-- `/_authenticated/_admin/*` layout gated by `has_role(admin)`:
-  - Users (verify/ban/badge)
-  - Domains (review reports, override status)
-  - Escrow/transactions monitor
-  - Global settings & analytics
-- **Temporary admin credentials banner**: I will NOT auto-provision a shared admin password inside the app — that's a security landmine (anyone reading the banner becomes admin on the live site). Instead I'll add a `promote_me_to_admin` one-shot server fn gated by an env secret `ADMIN_BOOTSTRAP_TOKEN` you paste in — you sign in normally, hit the banner, paste the token, become admin. Banner only renders when `import.meta.env.DEV` or when your account has the token flag. Tell me if you'd rather I hard-code a dev-only email allowlist instead.
+### Outbound Leads panel inside `/gadget-ai`
+- New tab alongside the appraisal: **Outbound**. Input: keyword or the currently-appraised domain. Output: a table of potential corporate buyers.
+- Server function `findOutboundLeads({ domain, keyword, industry?, limit? })` (existing MCP `find_leads` tool reused server-side, `google/gemini-3-flash-preview` via Lovable AI Gateway).
+- Each lead row: **Company · Website · Email · Phone · Fit reason · Score**.
+- Data cleaning: emails/phones extracted via regex on model output + optional server-side fetch of the company site's `/contact` HTML to pull real `mailto:` / `tel:` links when present (fallback to plausible `hello@`, `info@`).
+- Persist to new `public.outbound_leads` (RLS: owner-only; realtime enabled).
+- Export UX: **Copy all**, **Copy emails**, **Copy phones**, **Download CSV**, per-row copy buttons — clear, boutique styling matching current emerald/mono aesthetic.
 
-## Open questions before I start Wave 1
-1. **Go / order?** Ship Wave 1 now, or a different order?
-2. **Outbound provider**: OK to use Lovable AI + server-side fetch (no key needed), or do you want Serper.dev / Hunter.io (you'd add the key)?
-3. **Visitor tracking**: your landers already ship — is it OK for me to inject a 1×1 pixel `<img>` into the lander template so `visits` starts filling immediately?
-4. **Admin bootstrap**: env-token promotion (my recommendation) or dev-only email allowlist?
+### Leaflet live visitor map
+- Install `leaflet` + `react-leaflet` + types.
+- New `<VisitorMap/>` on `/gadget-ai` (and portfolio drawer): world map, pulsing dots per recent visit, click a dot for domain + country + timestamp.
+- Data source: new `public.visits` table (`id, domain_id, ts, country, region, city, lat, lon, referrer, ua_hash`), RLS owner-only, realtime enabled.
+- Ingest: new public route `/api/public/track/$landerId` — 1×1 pixel endpoint that reads Cloudflare `cf-ipcountry` / `cf-iplatitude` / `cf-iplongitude` headers, inserts a `visits` row via a scoped edge insert (no external geo-IP service needed).
+- Landing pages (`src/components/landers.tsx`) get a hidden `<img src="/api/public/track/{landerId}?d={domain_id}" />` beacon.
+- Portfolio `visitor_count` auto-syncs via a Postgres trigger on `visits` insert.
 
-Answer 1–4 (or say "go, your judgment") and I'll start Wave 1 immediately.
+### Skeletons + UX polish (applies globally)
+- Add shared `RowSkeleton`, `CardSkeleton`, `MapSkeleton`, `ChatSkeleton` under `src/components/ui/skeletons.tsx`.
+- Retrofit: portfolio table, dashboard table, gadget appraisal, deal-room chat, outbound leads table.
+- **Row buttons**: consistent 32×32 hit area, `focus-visible` ring, tooltip via `title`, `active:scale-97`, disabled state, keyboard `Enter`.
+- **Live pulse fix**: replace polling-based "live" indicators with Supabase realtime status; green dot only when channel `SUBSCRIBED`, amber on reconnect, red on error, with reconnect counter.
+
+## Wave 3 — Public profiles, buyer accounts
+
+### Public buyer/seller profile
+- New route `src/routes/u.$handle.tsx` (public, SSR): avatar, display name, bio, verification badge, member since, star rating (avg from `deal_reviews`), and a grid of their public domains + closed sales count.
+- Loader uses server publishable client + narrow `TO anon` SELECT policies on new tables.
+- OG tags + `og:image` derived from profile data.
+
+### Schema additions
+- `public.profiles` (extends the auth user): `handle` (unique), `display_name`, `bio`, `avatar_url`, `verification` enum (`none|email|id|top_broker`), `created_at`. Trigger to auto-create profile on new user.
+- `public.deal_reviews`: `deal_id`, `reviewer_id`, `subject_id`, `stars`, `comment`.
+- All with GRANTs + RLS per Cloud rules.
+
+### Buyer account surface (extends existing `_authenticated/account.tsx`)
+- Tabs: **Profile** (handle, bio, avatar upload) · **Watchlist** · **Offers made** · **Purchases** · **Security** (change email, password, 2FA TOTP toggle) · **Notifications** (email digests, offer pings).
+- `public.watchlist` table; add "Watch" button on public domain pages `d/$domain`.
+
+## Wave 4 — Plans & admin
+
+### Plans page
+- New `src/routes/pricing.tsx` (public) matching the landing-page tiers: **Gadget (Free) · Gadget+ ($19.99/mo) · Ultra Gadget ($49.99/mo)**.
+- Comparison table, monthly/annual toggle (reuses landing animation).
+- `public.subscriptions` table (`user_id, tier, status, current_period_end`). Manual upgrade for now (Stripe wiring optional follow-up — payment provider not enabled yet, so upgrade buttons trigger a "coming soon" toast + save intent).
+- Gate features: `find_leads` and Leaflet map require `tier >= plus`; UI shows soft upsell instead of blocking.
+
+### Admin surface + safe bootstrap
+- `user_roles` table + `has_role(uuid, app_role)` security-definer function (per user-roles rules).
+- New `src/routes/_authenticated/_admin/` layout gated by `has_role('admin')`; child routes: **Users**, **Domains**, **Deals**, **Flags**.
+- Bootstrap: env secret `ADMIN_BOOTSTRAP_TOKEN`; a discreet dev banner on `/account` reads "Enter admin token" for the signed-in user, server fn validates the token constant-time and inserts an `admin` row. No auto-provisioned credentials, no localStorage flags, no hardcoded emails.
+
+### Brand DNA guardrails (every wave)
+- Emerald primary, mono uppercase micro-labels, boutique borders, `text-glow` accents, existing rounded-square logo. No new fonts, no gradients outside `.gradient-brand`.
+
+## Technical notes
+- All new server logic uses `createServerFn` (`.functions.ts`) with `requireSupabaseAuth`; public track endpoint is a `/api/public/*` server route with signature-free rate limiting on Cloudflare headers.
+- Every new `public.*` table ships with `GRANT` block + RLS policies + realtime `ALTER PUBLICATION` in the same migration.
+- MCP manifest re-extracted after any tool change.
+
+## Defaults chosen (was blocking before)
+1. **Order**: Wave 2 first (Outbound + Map + skeletons + button UX + live-state fix), then 3, then 4.
+2. **Outbound provider**: Lovable AI Gateway + server-side contact-page fetch. Zero user-supplied keys.
+3. **Visitor tracking**: 1×1 pixel injected into all landers; Cloudflare geo headers, no third-party service.
+4. **Admin bootstrap**: env-token promotion via account-page banner. No auto-provisioned admin credentials.
+
+Say **go** to start Wave 2, or override any default and I'll adjust before building.
