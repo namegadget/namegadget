@@ -112,6 +112,14 @@ function PortfolioPage() {
     });
   }, [domains, q, sort]);
 
+  useEffect(() => { setPage(1); }, [q, sort]);
+  const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedList = useMemo(
+    () => list.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [list, currentPage],
+  );
+
   const totalValue = domains.reduce((s, d) => s + (d.appraised_value ?? 0), 0);
   const totalTraffic = domains.reduce((s, d) => s + d.visitor_count, 0);
   const liveCount = Object.values(health).filter((h) => h.hasA).length;
