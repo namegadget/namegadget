@@ -347,9 +347,9 @@ function ExpiryBar({ days }: { days: number }) {
 
 function StatMini({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className={`rounded-lg border px-3 sm:px-4 py-2 sm:py-2.5 min-w-0 ${accent ? "border-emerald-400/30 bg-emerald-500/10" : "border-white/10 bg-white/5"}`}>
-      <div className={`text-[9px] font-mono uppercase tracking-widest truncate ${accent ? "text-emerald-300/80" : "text-white/40"}`}>{label}</div>
-      <div className={`text-sm sm:text-lg font-semibold mt-0.5 truncate ${accent ? "text-emerald-300" : ""}`}>{value}</div>
+    <div className={`rounded-lg border px-3 sm:px-4 py-2 sm:py-2.5 min-w-0 shadow-sm ${accent ? "border-primary/30 bg-primary/10" : "border-border bg-card"}`}>
+      <div className={`text-[9px] font-mono uppercase tracking-widest truncate ${accent ? "text-primary" : "text-muted-foreground"}`}>{label}</div>
+      <div className={`text-sm sm:text-lg font-semibold mt-0.5 truncate text-foreground ${accent ? "text-primary" : ""}`}>{value}</div>
     </div>
   );
 }
