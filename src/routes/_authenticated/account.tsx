@@ -1,10 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { claimAdmin, amIAdmin } from "@/lib/admin.functions";
 import {
   ArrowLeft, Mail, Calendar, Globe2, TrendingUp,
-  AlertTriangle, DollarSign, ShieldCheck, KeyRound, Copy, Loader2,
+  AlertTriangle, DollarSign, ShieldCheck, KeyRound, Copy, Loader2, User, Terminal,
 } from "lucide-react";
 
 type Domain = {
@@ -26,24 +28,66 @@ function daysUntil(dateStr: string) {
 }
 
 function AccountPage() {
+  const navigate = useNavigate();
   const [user, setUser] = useState<{ email: string; id: string; created_at: string } | null>(null);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
   const [pw, setPw] = useState("");
   const [pwLoading, setPwLoading] = useState(false);
+  const [handle, setHandle] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [bio, setBio] = useState("");
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [adminToken, setAdminToken] = useState("");
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const claim = useServerFn(claimAdmin);
+  const check = useServerFn(amIAdmin);
 
   useEffect(() => {
     (async () => {
       const { data: u } = await supabase.auth.getUser();
       if (u.user) {
         setUser({ email: u.user.email ?? "", id: u.user.id, created_at: u.user.created_at });
+        const { data: p } = await supabase.from("profiles").select("handle,display_name,bio").eq("id", u.user.id).maybeSingle();
+        if (p) {
+          setHandle(p.handle ?? "");
+          setDisplayName(p.display_name ?? "");
+          setBio(p.bio ?? "");
+        }
+        check().then((r) => setIsAdmin(r.admin)).catch(() => {});
       }
       const { data, error } = await supabase.from("domains").select("*");
       if (error) toast.error(error.message);
       setDomains((data as Domain[]) ?? []);
       setLoading(false);
     })();
-  }, []);
+  }, [check]);
+
+  async function handleProfileSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user) return;
+    setProfileLoading(true);
+    const { error } = await supabase
+      .from("profiles")
+      .upsert({ id: user.id, handle: handle.trim() || null, display_name: displayName.trim() || null, bio: bio.trim() || null });
+    setProfileLoading(false);
+    if (error) return toast.error(error.message);
+    toast.success("Profile updated.");
+  }
+
+  async function handleClaimAdmin(e: React.FormEvent) {
+    e.preventDefault();
+    if (!adminToken.trim()) return;
+    setAdminLoading(true);
+    const res = await claim({ data: { token: adminToken.trim() } });
+    setAdminLoading(false);
+    if (!res.ok) return toast.error(res.error);
+    toast.success("Admin access granted.");
+    setAdminToken("");
+    setIsAdmin(true);
+  }
+
 
   const stats = useMemo(() => {
     const total = domains.length;
@@ -188,6 +232,67 @@ function AccountPage() {
                     <p className="text-sm text-muted-foreground text-center py-6">No domains yet.</p>
                   )}
                 </div>
+              </section>
+            </div>
+
+            {/* Profile & Admin */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <section className="rounded-2xl border border-border bg-card/60 p-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <User className="h-4 w-4 text-primary" />
+                  <h3 className="font-semibold">Public profile</h3>
+                </div>
+                <p className="text-xs text-muted-foreground mb-5">
+                  Visible at <span className="font-mono">/u/{handle || "your-handle"}</span>
+                </p>
+                <form onSubmit={handleProfileSave} className="space-y-3">
+                  <div>
+                    <label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Handle</label>
+                    <input value={handle} onChange={(e) => setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))} className="mt-1 w-full rounded-md border border-input bg-input/40 px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Display name</label>
+                    <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="mt-1 w-full rounded-md border border-input bg-input/40 px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Bio</label>
+                    <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="mt-1 w-full rounded-md border border-input bg-input/40 px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 resize-none" />
+                  </div>
+                  <div className="flex gap-2">
+                    <button type="submit" disabled={profileLoading} className="flex-1 inline-flex items-center justify-center gap-2 rounded-md gradient-brand text-primary-foreground px-4 py-2 text-sm font-semibold glow-cyan hover:opacity-90 transition disabled:opacity-60">
+                      {profileLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <User className="h-4 w-4" />} Save profile
+                    </button>
+                    {handle && (
+                      <button type="button" onClick={() => navigate({ to: "/u/$handle", params: { handle } })} className="rounded-md border border-border px-3 py-2 text-xs font-mono uppercase tracking-widest hover:border-primary/40 transition">
+                        View
+                      </button>
+                    )}
+                  </div>
+                </form>
+              </section>
+
+              <section className="rounded-2xl border border-border bg-card/60 p-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <Terminal className="h-4 w-4 text-primary" />
+                  <h3 className="font-semibold">Admin access</h3>
+                </div>
+                <p className="text-xs text-muted-foreground mb-5">
+                  {isAdmin
+                    ? "You have admin access."
+                    : "Paste the ADMIN_BOOTSTRAP_TOKEN to elevate this account."}
+                </p>
+                {isAdmin ? (
+                  <Link to="/admin" className="w-full inline-flex items-center justify-center gap-2 rounded-md gradient-brand text-primary-foreground px-4 py-2 text-sm font-semibold glow-cyan hover:opacity-90 transition">
+                    <ShieldCheck className="h-4 w-4" /> Open admin
+                  </Link>
+                ) : (
+                  <form onSubmit={handleClaimAdmin} className="space-y-3">
+                    <input type="password" value={adminToken} onChange={(e) => setAdminToken(e.target.value)} placeholder="Bootstrap token" className="w-full rounded-md border border-input bg-input/40 px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 font-mono" />
+                    <button type="submit" disabled={adminLoading} className="w-full inline-flex items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary/10 text-primary px-4 py-2 text-sm font-semibold hover:bg-primary/20 transition disabled:opacity-60">
+                      {adminLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />} Claim admin
+                    </button>
+                  </form>
+                )}
               </section>
             </div>
           </>

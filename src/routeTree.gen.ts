@@ -14,12 +14,14 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UHandleRouteImport } from './routes/u.$handle'
 import { Route as DDomainRouteImport } from './routes/d.$domain'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as AuthenticatedLandersRouteImport } from './routes/_authenticated/landers'
 import { Route as AuthenticatedGadgetAiRouteImport } from './routes/_authenticated/gadget-ai'
 import { Route as AuthenticatedDealRoomRouteImport } from './routes/_authenticated/deal-room'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -52,6 +54,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UHandleRoute = UHandleRouteImport.update({
+  id: '/u/$handle',
+  path: '/u/$handle',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DDomainRoute = DDomainRouteImport.update({
   id: '/d/$domain',
   path: '/d/$domain',
@@ -80,6 +87,11 @@ const AuthenticatedDealRoomRoute = AuthenticatedDealRoomRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
@@ -129,12 +141,14 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/deal-room': typeof AuthenticatedDealRoomRoute
   '/gadget-ai': typeof AuthenticatedGadgetAiRoute
   '/landers': typeof AuthenticatedLandersRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/d/$domain': typeof DDomainRoute
+  '/u/$handle': typeof UHandleRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/track/$domainId': typeof ApiPublicTrackDomainIdRoute
@@ -148,12 +162,14 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/deal-room': typeof AuthenticatedDealRoomRoute
   '/gadget-ai': typeof AuthenticatedGadgetAiRoute
   '/landers': typeof AuthenticatedLandersRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/d/$domain': typeof DDomainRoute
+  '/u/$handle': typeof UHandleRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/track/$domainId': typeof ApiPublicTrackDomainIdRoute
@@ -169,12 +185,14 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/deal-room': typeof AuthenticatedDealRoomRoute
   '/_authenticated/gadget-ai': typeof AuthenticatedGadgetAiRoute
   '/_authenticated/landers': typeof AuthenticatedLandersRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
   '/d/$domain': typeof DDomainRoute
+  '/u/$handle': typeof UHandleRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/track/$domainId': typeof ApiPublicTrackDomainIdRoute
@@ -190,12 +208,14 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/account'
+    | '/admin'
     | '/dashboard'
     | '/deal-room'
     | '/gadget-ai'
     | '/landers'
     | '/portfolio'
     | '/d/$domain'
+    | '/u/$handle'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/track/$domainId'
@@ -209,12 +229,14 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/account'
+    | '/admin'
     | '/dashboard'
     | '/deal-room'
     | '/gadget-ai'
     | '/landers'
     | '/portfolio'
     | '/d/$domain'
+    | '/u/$handle'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/track/$domainId'
@@ -229,12 +251,14 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/account'
+    | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/_authenticated/deal-room'
     | '/_authenticated/gadget-ai'
     | '/_authenticated/landers'
     | '/_authenticated/portfolio'
     | '/d/$domain'
+    | '/u/$handle'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/track/$domainId'
@@ -250,6 +274,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   DDomainRoute: typeof DDomainRoute
+  UHandleRoute: typeof UHandleRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicTrackDomainIdRoute: typeof ApiPublicTrackDomainIdRoute
@@ -293,6 +318,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/u/$handle': {
+      id: '/u/$handle'
+      path: '/u/$handle'
+      fullPath: '/u/$handle'
+      preLoaderRoute: typeof UHandleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/d/$domain': {
       id: '/d/$domain'
       path: '/d/$domain'
@@ -333,6 +365,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/account': {
@@ -389,6 +428,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDealRoomRoute: typeof AuthenticatedDealRoomRoute
   AuthenticatedGadgetAiRoute: typeof AuthenticatedGadgetAiRoute
@@ -398,6 +438,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDealRoomRoute: AuthenticatedDealRoomRoute,
   AuthenticatedGadgetAiRoute: AuthenticatedGadgetAiRoute,
@@ -418,6 +459,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   DDomainRoute: DDomainRoute,
+  UHandleRoute: UHandleRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicTrackDomainIdRoute: ApiPublicTrackDomainIdRoute,
