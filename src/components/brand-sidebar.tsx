@@ -109,7 +109,10 @@ export function BrandSidebar() {
       {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-background border-b border-border flex items-center justify-between px-4">
         <Link to="/dashboard" className="flex items-center gap-2">
-          <img src={lightLogo.url} alt="NameGadget" className="h-6 w-auto" />
+          <span className="h-8 w-8 rounded-lg border border-border bg-card shadow-sm overflow-hidden flex items-center justify-center">
+            <img src={lightLogo.url} alt="NameGadget" className="h-5 w-5 object-contain" />
+          </span>
+          <span className="font-semibold text-sm text-foreground">NameGadget</span>
         </Link>
         <button
           onClick={() => setOpen(true)}
