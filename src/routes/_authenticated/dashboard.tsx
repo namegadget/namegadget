@@ -409,6 +409,95 @@ function Chip({
   );
 }
 
+
+/* ===== New table cells: Domain (favicon+copy) · Countdown · Lander select ===== */
+
+function DomainCell({ name }: { name: string }) {
+  const [copied, setCopied] = useState(false);
+  async function copy(e: React.MouseEvent) {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(name);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch { /* ignore */ }
+  }
+  return (
+    <div className="flex items-center gap-2.5 min-w-0">
+      <img
+        src={`https://www.google.com/s2/favicons?domain=${name}&sz=32`}
+        alt=""
+        width={16}
+        height={16}
+        className="h-4 w-4 rounded-sm shrink-0 opacity-80 bg-muted"
+        onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
+      />
+      <a
+        href={`https://${name}`}
+        target="_blank"
+        rel="noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className="font-semibold text-foreground hover:text-primary truncate transition"
+      >
+        {name}
+      </a>
+      <button
+        onClick={copy}
+        title={copied ? "Copied!" : "Copy domain"}
+        className="opacity-0 group-hover:opacity-100 focus:opacity-100 h-6 w-6 inline-flex items-center justify-center rounded border border-transparent hover:border-border hover:bg-muted text-muted-foreground hover:text-foreground transition"
+      >
+        {copied ? <CircleDot className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+      </button>
+    </div>
+  );
+}
+
+function CountdownBadge({ iso }: { iso: string }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  const ms = new Date(iso).getTime() - now;
+  const days = Math.ceil(ms / 86_400_000);
+  const expired = days < 0;
+  const tone = expired
+    ? "border-destructive/40 bg-destructive/10 text-destructive"
+    : days < 30 ? "border-red-500/40 bg-red-500/10 text-red-700"
+    : days < 90 ? "border-amber-500/40 bg-amber-500/10 text-amber-700"
+    : "border-emerald-500/40 bg-emerald-500/10 text-emerald-700";
+  const label = expired
+    ? `${Math.abs(days)}d expired`
+    : days === 0 ? "today"
+    : days < 30 ? `${days}d · renew`
+    : days < 365 ? `${days}d`
+    : `${Math.floor(days / 365)}y ${Math.floor((days % 365) / 30)}m`;
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-mono ${tone}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${expired || days < 30 ? "bg-current animate-pulse" : "bg-current"}`} />
+      {label}
+    </span>
+  );
+}
+
+function LanderSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="relative inline-block">
+      <select
+        value={value}
+        onClick={(e) => e.stopPropagation()}
+        onChange={(e) => onChange(e.target.value)}
+        className="appearance-none h-8 min-w-[140px] pl-2.5 pr-7 rounded-md border border-border bg-background text-[11px] font-medium hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition cursor-pointer"
+      >
+        {LANDER_TEMPLATES.map((t) => (
+          <option key={t.id} value={t.id}>{t.label}</option>
+        ))}
+      </select>
+      <LayoutTemplate className="h-3 w-3 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+    </div>
+  );
+}
+
 function ExpiryBadge({ days }: { days: number }) {
   const cls = days < 30
     ? "text-danger border-danger/40 bg-danger/10"
