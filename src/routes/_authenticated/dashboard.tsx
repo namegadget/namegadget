@@ -854,10 +854,10 @@ function GadgetView({ domain }: { domain: Domain }) {
 
       {/* VALUE CARDS */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-5">
-          <p className="text-[10px] uppercase tracking-widest opacity-90">Estimated Market Value</p>
-          <p className="text-3xl font-black mt-2">{fmt(data.marketValue)}</p>
-          <p className="text-[10px] opacity-80 mt-2">{data.algorithm}</p>
+        <div className="rounded-xl border border-border bg-card p-5">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Estimated Market Value</p>
+          <p className="text-3xl font-bold mt-2 text-foreground">{fmt(data.marketValue)}</p>
+          <p className="text-[10px] text-muted-foreground mt-2">{data.algorithm}</p>
         </div>
         <div className="rounded-xl border-2 border-primary/40 bg-primary/5 p-5">
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Suggested Range</p>
