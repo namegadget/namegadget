@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Globe2, ArrowUpRight, Search, RefreshCw, ArrowUpDown, ShieldCheck,
-  Mail, Radio, Server, Loader2, ExternalLink,
+  Mail, Radio, Server, Loader2, ExternalLink, Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { enrichDomain, type DomainEnrichment } from "@/lib/domain-enrich";
