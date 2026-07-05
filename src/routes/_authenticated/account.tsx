@@ -97,15 +97,14 @@ function AccountPage() {
         ) : (
           <>
             {/* Profile hero */}
-            <section className="relative overflow-hidden rounded-3xl border border-border bg-card/70 p-5 sm:p-8 bg-grid">
-              <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full gradient-brand opacity-20 blur-3xl" />
+            <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-5 sm:p-8">
               <div className="relative flex flex-col md:flex-row md:items-center gap-5 md:gap-6">
-                <div className="h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-2xl gradient-brand glow-cyan flex items-center justify-center text-primary-foreground text-2xl sm:text-3xl font-bold">
+                <div className="h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground text-2xl sm:text-3xl font-bold">
                   {user?.email.slice(0, 1).toUpperCase() || "U"}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h1 className="text-xl sm:text-2xl font-bold truncate min-w-0">{user?.email}</h1>
+                    <h1 className="text-xl sm:text-2xl font-bold truncate min-w-0 text-foreground">{user?.email}</h1>
                     <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-xs font-mono text-primary shrink-0">
                       <ShieldCheck className="h-3 w-3" /> {tier}
                     </span>
