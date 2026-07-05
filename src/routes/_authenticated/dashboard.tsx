@@ -51,6 +51,20 @@ function Dashboard() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
     void loadDomains();
+
+    // Realtime sync — any insert / update / delete refreshes the row locally
+    const ch = supabase
+      .channel("dashboard-domains")
+      .on("postgres_changes", { event: "*", schema: "public", table: "domains" }, (payload) => {
+        setDomains((prev) => {
+          if (payload.eventType === "INSERT") return [payload.new as Domain, ...prev];
+          if (payload.eventType === "UPDATE") return prev.map((d) => d.id === (payload.new as Domain).id ? { ...d, ...(payload.new as Domain) } : d);
+          if (payload.eventType === "DELETE") return prev.filter((d) => d.id !== (payload.old as Domain).id);
+          return prev;
+        });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
   async function loadDomains() {
@@ -59,6 +73,14 @@ function Dashboard() {
     if (error) toast.error(error.message);
     setDomains((data as Domain[]) ?? []);
     setLoading(false);
+  }
+
+  async function updateLander(domainId: string, landerId: string) {
+    // Optimistic
+    setDomains((rows) => rows.map((r) => r.id === domainId ? { ...r, selected_lander: landerId } : r));
+    const { error } = await supabase.from("domains").update({ selected_lander: landerId }).eq("id", domainId);
+    if (error) toast.error(error.message);
+    else toast.success("Lander updated");
   }
 
   // Live counts (unfiltered) for the KPI + chip badges
