@@ -28,24 +28,66 @@ function daysUntil(dateStr: string) {
 }
 
 function AccountPage() {
+  const navigate = useNavigate();
   const [user, setUser] = useState<{ email: string; id: string; created_at: string } | null>(null);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
   const [pw, setPw] = useState("");
   const [pwLoading, setPwLoading] = useState(false);
+  const [handle, setHandle] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [bio, setBio] = useState("");
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [adminToken, setAdminToken] = useState("");
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const claim = useServerFn(claimAdmin);
+  const check = useServerFn(amIAdmin);
 
   useEffect(() => {
     (async () => {
       const { data: u } = await supabase.auth.getUser();
       if (u.user) {
         setUser({ email: u.user.email ?? "", id: u.user.id, created_at: u.user.created_at });
+        const { data: p } = await supabase.from("profiles").select("handle,display_name,bio").eq("id", u.user.id).maybeSingle();
+        if (p) {
+          setHandle(p.handle ?? "");
+          setDisplayName(p.display_name ?? "");
+          setBio(p.bio ?? "");
+        }
+        check().then((r) => setIsAdmin(r.admin)).catch(() => {});
       }
       const { data, error } = await supabase.from("domains").select("*");
       if (error) toast.error(error.message);
       setDomains((data as Domain[]) ?? []);
       setLoading(false);
     })();
-  }, []);
+  }, [check]);
+
+  async function handleProfileSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user) return;
+    setProfileLoading(true);
+    const { error } = await supabase
+      .from("profiles")
+      .upsert({ id: user.id, handle: handle.trim() || null, display_name: displayName.trim() || null, bio: bio.trim() || null });
+    setProfileLoading(false);
+    if (error) return toast.error(error.message);
+    toast.success("Profile updated.");
+  }
+
+  async function handleClaimAdmin(e: React.FormEvent) {
+    e.preventDefault();
+    if (!adminToken.trim()) return;
+    setAdminLoading(true);
+    const res = await claim({ data: { token: adminToken.trim() } });
+    setAdminLoading(false);
+    if (!res.ok) return toast.error(res.error);
+    toast.success("Admin access granted.");
+    setAdminToken("");
+    setIsAdmin(true);
+  }
+
 
   const stats = useMemo(() => {
     const total = domains.length;
