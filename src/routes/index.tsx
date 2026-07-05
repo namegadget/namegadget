@@ -451,7 +451,6 @@ function Landing() {
 
       {/* HERO — Page Pulse style: centered, huge headline, solid accent line */}
       <section ref={heroRef} className="relative">
-        <div className="absolute inset-0 pointer-events-none [background:radial-gradient(70%_55%_at_50%_0%,color-mix(in_oklab,var(--primary)_10%,transparent),transparent_70%)]" />
         <div className="relative max-w-5xl mx-auto px-6 pt-10 md:pt-20 pb-14 md:pb-20 text-center">
           <div className="hero-eyebrow opacity-0 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground mb-8 shadow-sm">
             <span className="h-5 w-5 rounded-full gradient-brand inline-flex items-center justify-center">
@@ -489,11 +488,11 @@ function Landing() {
           <div className="hero-cta opacity-0 mt-8 flex flex-col items-center gap-2">
             <div className="flex -space-x-2">
               {[
-                "bg-gradient-to-br from-emerald-300 to-emerald-600",
-                "bg-gradient-to-br from-amber-300 to-orange-500",
-                "bg-gradient-to-br from-sky-300 to-indigo-500",
-                "bg-gradient-to-br from-rose-300 to-pink-500",
-                "bg-gradient-to-br from-teal-300 to-emerald-700",
+                "bg-emerald-500",
+                "bg-amber-500",
+                "bg-sky-500",
+                "bg-rose-500",
+                "bg-teal-500",
               ].map((c, i) => (
                 <div key={i} className={`h-8 w-8 rounded-full ring-2 ring-background ${c}`} />
               ))}
@@ -524,7 +523,7 @@ function Landing() {
             </div>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
               <span className="block">Stop juggling tools.</span>
-              <span className="block gradient-brand bg-clip-text text-transparent">Start seeing clearly.</span>
+              <span className="block text-primary">Start seeing clearly.</span>
             </h2>
             <p className="mt-4 text-muted-foreground max-w-2xl mx-auto text-sm md:text-base">
               Most domainers stitch spreadsheets, RDAP checkers, appraisal APIs, escrow tools, and
@@ -543,7 +542,7 @@ function Landing() {
             </div>
 
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-[min(360px,90%)] rounded-2xl border border-primary/30 bg-card/95 backdrop-blur-xl p-6 shadow-[0_30px_80px_-20px_color-mix(in_oklab,var(--primary)_40%,transparent)]">
+              <div className="w-[min(360px,90%)] rounded-2xl border border-primary/30 bg-card/95 backdrop-blur-xl p-6 shadow-xl">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="h-9 w-9 rounded-xl gradient-brand flex items-center justify-center">
                     <Activity className="h-5 w-5 text-primary-foreground" />
@@ -575,7 +574,7 @@ function Landing() {
               <Zap className="h-3.5 w-3.5" /> Commission Bloat Report
             </div>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-              How much is your <span className="gradient-brand bg-clip-text text-transparent">marketplace</span> stealing?
+              How much is your <span className="text-primary">marketplace</span> stealing?
             </h2>
             <p className="mt-4 text-muted-foreground text-sm md:text-base">
               Traditional marketplaces skim 15–25% off every sale. On a $50,000 domain, that's up
@@ -613,7 +612,7 @@ function Landing() {
               <Clock className="h-3.5 w-3.5" /> ONBOARDING
             </div>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-              Up and running in <span className="gradient-brand bg-clip-text text-transparent">under 2 minutes</span>.
+              Up and running in <span className="text-primary">under 2 minutes</span>.
             </h2>
             <p className="mt-4 text-muted-foreground max-w-2xl mx-auto text-sm md:text-base">
               No CSV imports. No CRM setup. No sales calls. Four steps from signup to your first buyer ping — most
@@ -742,7 +741,7 @@ function Landing() {
               <Handshake className="h-3.5 w-3.5" /> P2P DEAL ROOM
             </div>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-              Insights your portfolio can <span className="gradient-brand bg-clip-text text-transparent">actually use together</span>.
+              Insights your portfolio can <span className="text-primary">actually use together</span>.
             </h2>
           </div>
 
@@ -769,7 +768,7 @@ function Landing() {
             </div>
 
             {/* right column — chat */}
-            <div className="rounded-2xl border border-border bg-card overflow-hidden flex flex-col shadow-[0_30px_80px_-30px_color-mix(in_oklab,var(--primary)_35%,transparent)]">
+            <div className="rounded-2xl border border-border bg-card overflow-hidden flex flex-col shadow-xl">
               <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-secondary/60">
                 <div className="flex items-center gap-2">
                   <MessageSquare className="h-4 w-4 text-primary" />
@@ -826,7 +825,7 @@ function Landing() {
               <CircleDollarSign className="h-3.5 w-3.5" /> PRICING
             </div>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-              Pick your <span className="gradient-brand bg-clip-text text-transparent">intensity</span>.
+              Pick your <span className="text-primary">intensity</span>.
             </h2>
             <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
               Every tier keeps 0% commissions and pure P2P negotiation. You bring the lead. You close the deal.
@@ -866,13 +865,12 @@ function Landing() {
                   key={t.name}
                   className={`group relative rounded-2xl border p-6 md:p-7 backdrop-blur transition-all overflow-hidden ${
                     t.highlight
-                      ? "border-primary/50 bg-card shadow-[0_30px_80px_-30px_color-mix(in_oklab,var(--primary)_45%,transparent)]"
+                      ? "border-primary/50 bg-card shadow-lg"
                       : "border-border bg-card hover:border-primary/30"
                   }`}
                 >
                   {t.highlight && (
                     <>
-                      <div className="absolute inset-0 pointer-events-none [background:radial-gradient(60%_60%_at_50%_0%,color-mix(in_oklab,var(--primary)_10%,transparent),transparent_60%)]" />
                       <div className="absolute -top-px left-1/2 -translate-x-1/2 gradient-brand text-primary-foreground text-[10px] font-mono uppercase tracking-widest px-3 py-1 rounded-b-md">
                         Most Popular Choice
                       </div>
@@ -967,8 +965,7 @@ function Landing() {
       {/* CLOSING CTA */}
       <section className="relative py-16 md:py-20 border-t border-border">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="relative rounded-3xl gradient-brand overflow-hidden p-8 md:p-14 text-primary-foreground shadow-[0_40px_120px_-30px_color-mix(in_oklab,var(--primary)_60%,transparent)]">
-            <div className="absolute inset-0 bg-grid opacity-20 pointer-events-none" />
+          <div className="relative rounded-3xl gradient-brand overflow-hidden p-8 md:p-14 text-primary-foreground">
             <div className="relative grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div>
                 <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur px-3 py-1 text-[11px] font-medium mb-4">

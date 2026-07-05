@@ -123,13 +123,6 @@ function PortfolioPage() {
     <div className="min-h-screen bg-background">
       {/* Hero — Page Pulse style */}
       <div className="relative overflow-hidden border-b border-border">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(70% 55% at 50% 0%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 70%)",
-          }}
-        />
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 md:px-8 pt-10 md:pt-14 pb-8 md:pb-10">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-6 sm:flex sm:flex-wrap sm:justify-between">
             <div className="min-w-0 max-w-3xl">
