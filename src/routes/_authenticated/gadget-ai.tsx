@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Sparkles,
   Search,
@@ -14,12 +14,18 @@ import {
   TrendingUp,
   Building2,
   MapPin,
+  Radio,
+  Activity,
+  TrendingDown,
 } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { appraiseDomain } from "@/lib/gadget.functions";
 import { Progress } from "@/components/ui/progress";
 
 export const Route = createFileRoute("/_authenticated/gadget-ai")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    domain: typeof s.domain === "string" ? s.domain : undefined,
+  }),
   component: GadgetAI,
 });
 
@@ -45,14 +51,14 @@ const statusTone: Record<string, string> = {
 
 function GadgetAI() {
   const appraise = useServerFn(appraiseDomain);
-  const [domain, setDomain] = useState("");
+  const { domain: initialDomain } = Route.useSearch();
+  const [domain, setDomain] = useState(initialDomain ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<Appraisal | null>(null);
 
-  async function run(e: React.FormEvent) {
-    e.preventDefault();
-    const d = domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
+  async function runFor(raw: string) {
+    const d = raw.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
     if (d.length < 3) return;
     setLoading(true);
     setError(null);
@@ -68,11 +74,22 @@ function GadgetAI() {
     }
   }
 
+  async function run(e: React.FormEvent) {
+    e.preventDefault();
+    await runFor(domain);
+  }
+
+  // Auto-run when arriving from the portfolio row button (?domain=…)
+  useEffect(() => {
+    if (initialDomain && initialDomain.length >= 3) void runFor(initialDomain);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialDomain]);
+
   return (
     <PageShell
       eyebrow="03 · Gadget+"
       title="gadget+ Domain Intelligence"
-      description="Institutional-grade appraisal report — comparable sales, TLD ecosystem, brand score, long-term thesis. Powered by Gemini."
+      description="Institutional-grade appraisal plus a live market pulse — comparable sales, TLD ecosystem, brand score, long-term thesis, and realtime signals. Powered by Gemini."
       icon={Sparkles}
     >
       <form onSubmit={run} className="mb-8 flex flex-col sm:flex-row gap-2">
@@ -112,12 +129,129 @@ function GadgetAI() {
 
       {report && <Report r={report} domain={domain} />}
 
-      {!report && !loading && !error && (
-        <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          Enter a domain above to generate a full DomainIQ-Pro report.
-        </div>
+      {!report && !loading && (
+        <LivePulse />
       )}
     </PageShell>
+  );
+}
+
+/* ============ Live Pulse (merged from gadget+ Live) ============ */
+
+type Pulse = { id: number; kind: "spike" | "drop" | "signal"; msg: string; delta: string; time: string };
+
+const PULSE_SEEDS = [
+  { kind: "spike", msg: "Search volume +212% on 'ai-agent.com'", delta: "+212%" },
+  { kind: "signal", msg: "Competitor 'neura.ai' registered by Anthropic Labs", delta: "NEW" },
+  { kind: "drop", msg: "Valuation drift on 'oldweb3.io': -8.4%", delta: "-8.4%" },
+  { kind: "spike", msg: "Traffic surge on 'quantum.dev' (+412 visits/hr)", delta: "+412" },
+  { kind: "signal", msg: "Outbound match: Sequoia portfolio requesting .ai domains", delta: "HOT" },
+  { kind: "spike", msg: "Keyword 'agentic' trending — +89% w/w", delta: "+89%" },
+] as const;
+
+function LivePulse() {
+  const [pulses, setPulses] = useState<Pulse[]>([]);
+  const [live, setLive] = useState(true);
+
+  useEffect(() => {
+    if (!live) return;
+    const push = () => {
+      const s = PULSE_SEEDS[Math.floor(Math.random() * PULSE_SEEDS.length)];
+      setPulses((p) =>
+        [
+          {
+            id: Date.now() + Math.random(),
+            kind: s.kind,
+            msg: s.msg,
+            delta: s.delta,
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+          },
+          ...p,
+        ].slice(0, 20),
+      );
+    };
+    push();
+    const t = setInterval(push, 2200);
+    return () => clearInterval(t);
+  }, [live]);
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+        Enter a domain above to generate a full DomainIQ-Pro report — or watch the live market pulse below.
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 rounded-xl border border-border bg-card overflow-hidden">
+          <div className="px-5 py-3 border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Activity className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold text-foreground">Market Pulse Stream</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                {pulses.length} events
+              </span>
+              <button
+                onClick={() => setLive((v) => !v)}
+                className={`inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[10px] font-mono uppercase tracking-widest border transition ${
+                  live
+                    ? "bg-primary/10 border-primary/40 text-primary"
+                    : "bg-background border-border text-muted-foreground"
+                }`}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${live ? "bg-primary animate-pulse" : "bg-muted-foreground"}`} />
+                {live ? "LIVE" : "PAUSED"}
+              </button>
+            </div>
+          </div>
+          <div className="divide-y divide-border max-h-[520px] overflow-y-auto">
+            {pulses.length === 0 && (
+              <div className="p-8 text-center text-sm text-muted-foreground">Waiting for market signals…</div>
+            )}
+            {pulses.map((p) => (
+              <div key={p.id} className="px-5 py-3 flex items-center gap-3 hover:bg-muted/20 transition">
+                <div
+                  className={`h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    p.kind === "spike"
+                      ? "bg-primary/10 text-primary"
+                      : p.kind === "drop"
+                      ? "bg-red-500/10 text-red-600"
+                      : "bg-sky-500/10 text-sky-600"
+                  }`}
+                >
+                  {p.kind === "spike" ? <TrendingUp className="h-4 w-4" /> : p.kind === "drop" ? <TrendingDown className="h-4 w-4" /> : <Radio className="h-4 w-4" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm text-foreground truncate">{p.msg}</div>
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-0.5">
+                    {p.time}
+                  </div>
+                </div>
+                <div className="text-xs font-mono font-semibold text-foreground flex-shrink-0">{p.delta}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-xl border border-border bg-card p-5">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
+              Signals / min
+            </div>
+            <div className="text-3xl font-semibold text-foreground">27.3</div>
+            <div className="text-xs text-primary mt-1">+14% vs yesterday</div>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
+              Watched keywords
+            </div>
+            <div className="text-3xl font-semibold text-foreground">142</div>
+            <div className="text-xs text-muted-foreground mt-1">Across your portfolio</div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
