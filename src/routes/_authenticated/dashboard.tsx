@@ -93,20 +93,16 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="relative overflow-hidden bg-sidebar text-white">
-        <div className="absolute -top-40 -right-40 h-[560px] w-[560px] rounded-full pointer-events-none"
-             style={{ background: "radial-gradient(circle, rgba(4,120,87,0.22) 0%, transparent 65%)" }} />
-        <div className="absolute -bottom-24 left-16 h-[320px] w-[320px] rounded-full pointer-events-none"
-             style={{ background: "radial-gradient(circle, rgba(4,120,87,0.10) 0%, transparent 65%)" }} />
+      <header className="relative overflow-hidden border-b border-border bg-background">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-10 md:pt-14 pb-8 md:pb-10">
-          <div className="inline-flex items-center gap-2.5 text-[11px] uppercase tracking-[0.12em] font-semibold text-primary mb-5">
-            <span className="inline-block w-7 h-px bg-primary" />
-            01 · Dashboard · Management Console
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground mb-5 shadow-sm">
+            <span className="h-5 w-5 rounded-full bg-primary inline-flex items-center justify-center text-primary-foreground text-[10px] font-bold">01</span>
+            <span className="tracking-wide uppercase">Dashboard · Management Console</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight leading-[1.05] max-w-2xl">
-            Welcome back, <strong className="font-bold text-primary break-words">{email.split("@")[0] || "investor"}</strong>.
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.05] max-w-2xl text-foreground">
+            Welcome back, <span className="text-primary break-words">{email.split("@")[0] || "investor"}</span>.
           </h1>
-          <div className="mt-5 flex items-center gap-3 sm:gap-5 flex-wrap text-[11px] font-mono text-white/40">
+          <div className="mt-5 flex items-center gap-3 sm:gap-5 flex-wrap text-[11px] font-mono text-muted-foreground">
             <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> LIVE SYNC</span>
             <span>·</span>
             <span>{totalAssets} assets</span>
@@ -825,18 +821,18 @@ function GadgetView({ domain }: { domain: Domain }) {
   return (
     <div className="space-y-5">
       {/* HERO */}
-      <section className="rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-primary via-primary/90 to-violet-600 text-primary-foreground p-6 relative">
+      <section className="rounded-2xl overflow-hidden border border-border bg-card p-6 relative">
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur px-3 py-1 text-[10px] uppercase tracking-widest">
-            <Sparkles className="h-3 w-3" /> Domain Appraisal
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-[10px] uppercase tracking-widest text-foreground">
+            <Sparkles className="h-3 w-3 text-primary" /> Domain Appraisal
           </span>
-          <button onClick={run} className="text-[11px] inline-flex items-center gap-1 opacity-80 hover:opacity-100">
+          <button onClick={run} className="text-[11px] inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
             <RefreshCw className="h-3 w-3" /> Re-run
           </button>
         </div>
-        <h1 className="mt-4 text-4xl font-black tracking-tight">{domain.domain_name}</h1>
-        <p className="mt-1 text-sm opacity-90">{data.meaning}</p>
-        <div className="mt-4 flex flex-wrap gap-3 text-[11px] opacity-90">
+        <h1 className="mt-4 text-4xl font-bold tracking-tight text-foreground">{domain.domain_name}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{data.meaning}</p>
+        <div className="mt-4 flex flex-wrap gap-3 text-[11px] text-muted-foreground">
           <span>📅 {new Date().toLocaleString("en-US", { month: "long", year: "numeric" })}</span>
           <span>🧠 {data.algorithm}</span>
           <span>🌐 .{domain.domain_name.split(".").slice(-1)[0]} TLD</span>
@@ -858,10 +854,10 @@ function GadgetView({ domain }: { domain: Domain }) {
 
       {/* VALUE CARDS */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-5">
-          <p className="text-[10px] uppercase tracking-widest opacity-90">Estimated Market Value</p>
-          <p className="text-3xl font-black mt-2">{fmt(data.marketValue)}</p>
-          <p className="text-[10px] opacity-80 mt-2">{data.algorithm}</p>
+        <div className="rounded-xl border border-border bg-card p-5">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Estimated Market Value</p>
+          <p className="text-3xl font-bold mt-2 text-foreground">{fmt(data.marketValue)}</p>
+          <p className="text-[10px] text-muted-foreground mt-2">{data.algorithm}</p>
         </div>
         <div className="rounded-xl border-2 border-primary/40 bg-primary/5 p-5">
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Suggested Range</p>
@@ -991,23 +987,23 @@ function GadgetView({ domain }: { domain: Domain }) {
         <div className="mt-4 flex items-center gap-3">
           <span className="text-2xl font-black">{data.brandScoreTotal}<span className="text-muted-foreground text-sm">/25</span></span>
           <div className="flex-1 h-2.5 rounded-full bg-muted overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-violet-500 to-sky-500" style={{ width: `${(data.brandScoreTotal / 25) * 100}%` }} />
+            <div className="h-full bg-primary" style={{ width: `${(data.brandScoreTotal / 25) * 100}%` }} />
           </div>
         </div>
       </Card>
 
       {/* LONG-TERM INVESTMENT */}
-      <section className="rounded-2xl border-2 border-violet-500/40 bg-gradient-to-br from-violet-500/5 to-primary/5 p-5">
-        <h4 className="font-bold text-violet-700 flex items-center gap-2 mb-3">📈 Long-Term Investment Value (3-7 Year Hold)</h4>
+      <section className="rounded-2xl border border-border bg-card p-5">
+        <h4 className="font-bold text-foreground flex items-center gap-2 mb-3">📈 Long-Term Investment Value (3-7 Year Hold)</h4>
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="rounded-xl bg-gradient-to-br from-violet-500 to-violet-700 text-white p-4">
-            <p className="text-[10px] uppercase tracking-widest opacity-90">Projected Long-Term Value</p>
-            <p className="text-2xl font-black mt-1">{fmt(data.longTerm.projected)}+</p>
-            <p className="text-[10px] opacity-80 mt-1">3-7 year patient hold</p>
+          <div className="rounded-xl border border-border bg-background p-4">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Projected Long-Term Value</p>
+            <p className="text-2xl font-bold mt-1 text-foreground">{fmt(data.longTerm.projected)}+</p>
+            <p className="text-[10px] text-muted-foreground mt-1">3-7 year patient hold</p>
           </div>
-          <div className="rounded-xl border-2 border-violet-500/40 bg-background p-4">
+          <div className="rounded-xl border border-border bg-background p-4">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Long-Term Range</p>
-            <p className="text-2xl font-black mt-1 text-violet-700">{fmt(data.longTerm.rangeLow)} – {fmt(data.longTerm.rangeHigh)}</p>
+            <p className="text-2xl font-bold mt-1 text-primary">{fmt(data.longTerm.rangeLow)} – {fmt(data.longTerm.rangeHigh)}</p>
             <p className="text-[10px] text-muted-foreground mt-1">Market growth + scarcity</p>
           </div>
         </div>
