@@ -51,14 +51,14 @@ const statusTone: Record<string, string> = {
 
 function GadgetAI() {
   const appraise = useServerFn(appraiseDomain);
-  const [domain, setDomain] = useState("");
+  const { domain: initialDomain } = Route.useSearch();
+  const [domain, setDomain] = useState(initialDomain ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<Appraisal | null>(null);
 
-  async function run(e: React.FormEvent) {
-    e.preventDefault();
-    const d = domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
+  async function runFor(raw: string) {
+    const d = raw.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
     if (d.length < 3) return;
     setLoading(true);
     setError(null);
@@ -74,11 +74,22 @@ function GadgetAI() {
     }
   }
 
+  async function run(e: React.FormEvent) {
+    e.preventDefault();
+    await runFor(domain);
+  }
+
+  // Auto-run when arriving from the portfolio row button (?domain=…)
+  useEffect(() => {
+    if (initialDomain && initialDomain.length >= 3) void runFor(initialDomain);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialDomain]);
+
   return (
     <PageShell
       eyebrow="03 · Gadget+"
       title="gadget+ Domain Intelligence"
-      description="Institutional-grade appraisal report — comparable sales, TLD ecosystem, brand score, long-term thesis. Powered by Gemini."
+      description="Institutional-grade appraisal plus a live market pulse — comparable sales, TLD ecosystem, brand score, long-term thesis, and realtime signals. Powered by Gemini."
       icon={Sparkles}
     >
       <form onSubmit={run} className="mb-8 flex flex-col sm:flex-row gap-2">
