@@ -17,14 +17,19 @@ import {
   Radio,
   Activity,
   TrendingDown,
+  Send,
+  Map as MapIcon,
 } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { appraiseDomain } from "@/lib/gadget.functions";
 import { Progress } from "@/components/ui/progress";
+import { OutboundPanel } from "@/components/outbound-panel";
+import { VisitorMap } from "@/components/visitor-map";
 
 export const Route = createFileRoute("/_authenticated/gadget-ai")({
   validateSearch: (s: Record<string, unknown>) => ({
     domain: typeof s.domain === "string" ? s.domain : undefined,
+    tab: s.tab === "outbound" || s.tab === "map" ? s.tab : undefined,
   }),
   component: GadgetAI,
 });
