@@ -274,6 +274,26 @@ function PortfolioPage() {
                 </tbody>
               </table>
             </div>
+            {list.length > PAGE_SIZE && (
+              <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-t border-border bg-muted/20 text-xs">
+                <span className="font-mono text-muted-foreground">
+                  {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, list.length)} of {list.length}
+                </span>
+                <div className="inline-flex items-center gap-2">
+                  <button
+                    disabled={currentPage <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="h-8 px-3 rounded-md border border-border bg-card font-mono uppercase tracking-widest text-[10px] hover:border-emerald-500/40 hover:text-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >Prev</button>
+                  <span className="font-mono text-muted-foreground">{currentPage} / {totalPages}</span>
+                  <button
+                    disabled={currentPage >= totalPages}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    className="h-8 px-3 rounded-md border border-border bg-card font-mono uppercase tracking-widest text-[10px] hover:border-emerald-500/40 hover:text-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >Next</button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
