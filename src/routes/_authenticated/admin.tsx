@@ -30,9 +30,9 @@ const q = queryOptions({ queryKey: ["admin-stats"], queryFn: () => getAdminStats
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async () => {
     const { data: u } = await supabase.auth.getUser();
-    if (!u.user) throw redirect({ to: "/auth" });
+    if (!u.user) throw redirect({ to: "/auth", search: { next: undefined } });
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: u.user.id, _role: "admin" });
-    if (!isAdmin) throw redirect({ to: "/dashboard" });
+    if (!isAdmin) throw redirect({ to: "/dashboard" as const });
   },
   loader: ({ context }) => context.queryClient.ensureQueryData(q),
   component: AdminPage,
