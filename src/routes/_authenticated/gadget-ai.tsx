@@ -56,7 +56,8 @@ const statusTone: Record<string, string> = {
 
 function GadgetAI() {
   const appraise = useServerFn(appraiseDomain);
-  const { domain: initialDomain } = Route.useSearch();
+  const { domain: initialDomain, tab: initialTab } = Route.useSearch();
+  const [tab, setTab] = useState<"appraisal" | "outbound" | "map">(initialTab ?? "appraisal");
   const [domain, setDomain] = useState(initialDomain ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
