@@ -155,10 +155,10 @@ function Report({ r, domain }: { r: Appraisal; domain: string }) {
 
       {/* Value cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-6 text-center">
-          <div className="text-[10px] font-mono uppercase tracking-widest opacity-80">Estimated Market Value</div>
-          <div className="text-4xl font-bold my-3">{fmtUSD(r.marketValue)}</div>
-          <div className="text-xs opacity-80">{r.algorithm} + Premium</div>
+        <div className="rounded-xl border border-border bg-card p-6 text-center">
+          <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Estimated Market Value</div>
+          <div className="text-4xl font-bold my-3 text-foreground">{fmtUSD(r.marketValue)}</div>
+          <div className="text-xs text-muted-foreground">{r.algorithm} + Premium</div>
         </div>
         <div className="rounded-xl border border-violet-500/40 bg-violet-500/5 p-6 text-center">
           <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Suggested Range</div>
