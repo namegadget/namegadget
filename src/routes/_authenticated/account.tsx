@@ -1,10 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { claimAdmin, amIAdmin } from "@/lib/admin.functions";
 import {
   ArrowLeft, Mail, Calendar, Globe2, TrendingUp,
-  AlertTriangle, DollarSign, ShieldCheck, KeyRound, Copy, Loader2,
+  AlertTriangle, DollarSign, ShieldCheck, KeyRound, Copy, Loader2, User, Terminal,
 } from "lucide-react";
 
 type Domain = {
