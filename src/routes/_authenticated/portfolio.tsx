@@ -120,32 +120,33 @@ function PortfolioPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Hero */}
-      <div className="relative overflow-hidden bg-[#0a0a0a] text-white border-b border-white/5">
+    <div className="min-h-screen bg-background">
+      {/* Hero — Page Pulse style */}
+      <div className="relative overflow-hidden border-b border-border">
         <div
-          className="absolute inset-0 pointer-events-none opacity-60"
-          style={{ background: "radial-gradient(60% 60% at 20% 0%, rgba(16,185,129,0.18) 0%, transparent 60%), radial-gradient(40% 40% at 90% 10%, rgba(4,120,87,0.15) 0%, transparent 60%)" }}
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(70% 55% at 50% 0%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 70%)",
+          }}
         />
-        <div className="relative px-4 sm:px-6 md:px-8 pt-8 md:pt-10 pb-6 md:pb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-emerald-400/80">02 · Portfolio</span>
-            <span className="h-1 w-1 rounded-full bg-emerald-400/40" />
-            <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-white/30">Management Console</span>
-          </div>
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:justify-between">
-            <div className="flex min-w-0 items-start gap-3 sm:gap-4 max-w-2xl">
-              <div className="h-10 w-10 md:h-11 md:w-11 shrink-0 rounded-xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center">
-                <Globe2 className="h-5 w-5 text-emerald-400" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 md:px-8 pt-10 md:pt-14 pb-8 md:pb-10">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-6 sm:flex sm:flex-wrap sm:justify-between">
+            <div className="min-w-0 max-w-3xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground mb-5 shadow-sm">
+                <span className="h-5 w-5 rounded-full gradient-brand inline-flex items-center justify-center">
+                  <Globe2 className="h-3 w-3 text-primary-foreground" />
+                </span>
+                <span className="tracking-wide uppercase">02 · Portfolio</span>
               </div>
-              <div className="min-w-0">
-                <h1 className="truncate text-2xl md:text-3xl font-semibold tracking-tight">Portfolio</h1>
-                <p className="text-xs sm:text-sm text-white/50 mt-1.5">
-                  {domains.length} asset{domains.length === 1 ? "" : "s"} · {liveCount} live · {critical} expiring soon
-                </p>
-              </div>
+              <h1 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.05] text-foreground">
+                Portfolio
+              </h1>
+              <p className="mt-3 md:mt-4 text-sm md:text-base text-muted-foreground leading-relaxed max-w-2xl">
+                {domains.length} asset{domains.length === 1 ? "" : "s"} · {liveCount} live · {critical} expiring soon
+              </p>
             </div>
-            <div className="col-span-2 sm:col-auto grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+            <div className="col-span-2 sm:col-auto grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 shrink-0">
               <StatMini label="Assets" value={domains.length.toString()} />
               <StatMini label="Traffic" value={totalTraffic.toLocaleString()} />
               <StatMini label="Valuation" value={`$${(totalValue / 1000).toFixed(1)}k`} />
@@ -155,7 +156,7 @@ function PortfolioPage() {
         </div>
       </div>
 
-      <div className="p-4 sm:p-6 md:p-8 space-y-6">
+      <div className="max-w-6xl mx-auto p-4 sm:p-6 md:p-8 space-y-6">
         {/* Toolbar */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative flex-1 min-w-[220px] max-w-md">
@@ -346,9 +347,9 @@ function ExpiryBar({ days }: { days: number }) {
 
 function StatMini({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className={`rounded-lg border px-3 sm:px-4 py-2 sm:py-2.5 min-w-0 ${accent ? "border-emerald-400/30 bg-emerald-500/10" : "border-white/10 bg-white/5"}`}>
-      <div className={`text-[9px] font-mono uppercase tracking-widest truncate ${accent ? "text-emerald-300/80" : "text-white/40"}`}>{label}</div>
-      <div className={`text-sm sm:text-lg font-semibold mt-0.5 truncate ${accent ? "text-emerald-300" : ""}`}>{value}</div>
+    <div className={`rounded-lg border px-3 sm:px-4 py-2 sm:py-2.5 min-w-0 shadow-sm ${accent ? "border-primary/30 bg-primary/10" : "border-border bg-card"}`}>
+      <div className={`text-[9px] font-mono uppercase tracking-widest truncate ${accent ? "text-primary" : "text-muted-foreground"}`}>{label}</div>
+      <div className={`text-sm sm:text-lg font-semibold mt-0.5 truncate text-foreground ${accent ? "text-primary" : ""}`}>{value}</div>
     </div>
   );
 }
