@@ -52,6 +52,44 @@ export type Database = {
           },
         ]
       }
+      deal_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          deal_id: string | null
+          id: string
+          reviewer_id: string
+          stars: number
+          subject_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          deal_id?: string | null
+          id?: string
+          reviewer_id: string
+          stars: number
+          subject_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          deal_id?: string | null
+          id?: string
+          reviewer_id?: string
+          stars?: number
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_reviews_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deals: {
         Row: {
           buyer_email: string
@@ -231,6 +269,60 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          handle: string | null
+          id: string
+          updated_at: string
+          verification: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          handle?: string | null
+          id: string
+          updated_at?: string
+          verification?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          handle?: string | null
+          id?: string
+          updated_at?: string
+          verification?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       visits: {
         Row: {
           city: string | null
@@ -278,15 +370,51 @@ export type Database = {
           },
         ]
       }
+      watchlist: {
+        Row: {
+          created_at: string
+          domain_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          domain_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          domain_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watchlist_domain_id_fkey"
+            columns: ["domain_id"]
+            isOneToOne: false
+            referencedRelation: "domains"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_deal_participant: { Args: { _deal_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -413,6 +541,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
