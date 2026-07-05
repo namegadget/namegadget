@@ -81,7 +81,7 @@ export function BrandSidebar() {
       {/* Footer / user */}
       <div className="px-4 py-4 border-t border-border space-y-3 bg-muted/20">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold flex-shrink-0">
+          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold flex-shrink-0 shadow-sm">
             {email.slice(0, 1).toUpperCase() || "U"}
           </div>
           <div className="min-w-0 flex-1">
