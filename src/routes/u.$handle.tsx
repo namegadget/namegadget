@@ -21,7 +21,7 @@ const getProfile = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!profile) return null;
     const [{ data: domains }, { data: reviews }] = await Promise.all([
-      sb.from("domains").select("id,domain_name,status,visitor_count,appraised_value").eq("owner_id", profile.id).eq("status", "For Sale").limit(24),
+      sb.from("domains").select("id,domain_name,status,visitor_count,appraised_value").eq("user_id", profile.id).eq("status", "For Sale").limit(24),
       sb.from("deal_reviews").select("stars,comment,created_at").eq("subject_id", profile.id).limit(20),
     ]);
     const avg = reviews && reviews.length ? reviews.reduce((s, r) => s + r.stars, 0) / reviews.length : 0;
