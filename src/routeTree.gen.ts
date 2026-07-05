@@ -25,6 +25,7 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicWebhooksEscrowRouteImport } from './routes/api/public/webhooks/escrow'
+import { Route as ApiPublicTrackDomainIdRouteImport } from './routes/api/public/track/$domainId'
 
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
@@ -108,6 +109,11 @@ const ApiPublicWebhooksEscrowRoute = ApiPublicWebhooksEscrowRouteImport.update({
   path: '/api/public/webhooks/escrow',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicTrackDomainIdRoute = ApiPublicTrackDomainIdRouteImport.update({
+  id: '/api/public/track/$domainId',
+  path: '/api/public/track/$domainId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/d/$domain': typeof DDomainRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/api/public/track/$domainId': typeof ApiPublicTrackDomainIdRoute
   '/api/public/webhooks/escrow': typeof ApiPublicWebhooksEscrowRoute
 }
 export interface FileRoutesByTo {
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/d/$domain': typeof DDomainRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/api/public/track/$domainId': typeof ApiPublicTrackDomainIdRoute
   '/api/public/webhooks/escrow': typeof ApiPublicWebhooksEscrowRoute
 }
 export interface FileRoutesById {
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/d/$domain': typeof DDomainRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/api/public/track/$domainId': typeof ApiPublicTrackDomainIdRoute
   '/api/public/webhooks/escrow': typeof ApiPublicWebhooksEscrowRoute
 }
 export interface FileRouteTypes {
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/d/$domain'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/api/public/track/$domainId'
     | '/api/public/webhooks/escrow'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/d/$domain'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/api/public/track/$domainId'
     | '/api/public/webhooks/escrow'
   id:
     | '__root__'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/d/$domain'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/api/public/track/$domainId'
     | '/api/public/webhooks/escrow'
   fileRoutesById: FileRoutesById
 }
@@ -227,6 +239,7 @@ export interface RootRouteChildren {
   DDomainRoute: typeof DDomainRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPublicTrackDomainIdRoute: typeof ApiPublicTrackDomainIdRoute
   ApiPublicWebhooksEscrowRoute: typeof ApiPublicWebhooksEscrowRoute
 }
 
@@ -344,6 +357,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksEscrowRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/track/$domainId': {
+      id: '/api/public/track/$domainId'
+      path: '/api/public/track/$domainId'
+      fullPath: '/api/public/track/$domainId'
+      preLoaderRoute: typeof ApiPublicTrackDomainIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -379,6 +399,7 @@ const rootRouteChildren: RootRouteChildren = {
   DDomainRoute: DDomainRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPublicTrackDomainIdRoute: ApiPublicTrackDomainIdRoute,
   ApiPublicWebhooksEscrowRoute: ApiPublicWebhooksEscrowRoute,
 }
 export const routeTree = rootRouteImport
