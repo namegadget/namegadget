@@ -48,13 +48,14 @@ function Dashboard() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
   const [expiryFilter, setExpiryFilter] = useState<ExpiryFilter>("All");
   const [page, setPage] = useState(1);
+  const [liveState, setLiveState] = useState<"connecting" | "live" | "offline">("connecting");
   const PAGE_SIZE = 25;
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
     void loadDomains();
 
-    // Realtime sync — any insert / update / delete refreshes the row locally
+    // Realtime sync — reflect true channel status in the header pulse
     const ch = supabase
       .channel("dashboard-domains")
       .on("postgres_changes", { event: "*", schema: "public", table: "domains" }, (payload) => {
@@ -65,7 +66,11 @@ function Dashboard() {
           return prev;
         });
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") setLiveState("live");
+        else if (status === "CHANNEL_ERROR" || status === "CLOSED" || status === "TIMED_OUT") setLiveState("offline");
+        else setLiveState("connecting");
+      });
     return () => { supabase.removeChannel(ch); };
   }, []);
 
@@ -136,7 +141,21 @@ function Dashboard() {
             Welcome back, <span className="text-primary break-words">{email.split("@")[0] || "investor"}</span>.
           </h1>
           <div className="mt-5 flex items-center gap-3 sm:gap-5 flex-wrap text-[11px] font-mono text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> LIVE SYNC</span>
+            <span
+              className={`inline-flex items-center gap-1.5 ${
+                liveState === "live" ? "text-primary"
+                : liveState === "offline" ? "text-rose-600"
+                : "text-amber-600"
+              }`}
+              title={`Realtime channel: ${liveState}`}
+            >
+              <span className={`h-1.5 w-1.5 rounded-full ${
+                liveState === "live" ? "bg-primary animate-pulse"
+                : liveState === "offline" ? "bg-rose-500"
+                : "bg-amber-500 animate-pulse"
+              }`} />
+              {liveState === "live" ? "LIVE SYNC" : liveState === "offline" ? "OFFLINE" : "CONNECTING"}
+            </span>
             <span>·</span>
             <span>{totalAssets} assets</span>
             <span>·</span>

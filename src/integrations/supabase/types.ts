@@ -231,6 +231,53 @@ export type Database = {
           },
         ]
       }
+      visits: {
+        Row: {
+          city: string | null
+          country: string | null
+          domain_id: string
+          id: string
+          lat: number | null
+          lon: number | null
+          referrer: string | null
+          region: string | null
+          ts: string
+          ua_hash: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          domain_id: string
+          id?: string
+          lat?: number | null
+          lon?: number | null
+          referrer?: string | null
+          region?: string | null
+          ts?: string
+          ua_hash?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          domain_id?: string
+          id?: string
+          lat?: number | null
+          lon?: number | null
+          referrer?: string | null
+          region?: string | null
+          ts?: string
+          ua_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visits_domain_id_fkey"
+            columns: ["domain_id"]
+            isOneToOne: false
+            referencedRelation: "domains"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -25,7 +26,13 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicWebhooksEscrowRouteImport } from './routes/api/public/webhooks/escrow'
+import { Route as ApiPublicTrackDomainIdRouteImport } from './routes/api/public/track/$domainId'
 
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
@@ -108,11 +115,17 @@ const ApiPublicWebhooksEscrowRoute = ApiPublicWebhooksEscrowRouteImport.update({
   path: '/api/public/webhooks/escrow',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicTrackDomainIdRoute = ApiPublicTrackDomainIdRouteImport.update({
+  id: '/api/public/track/$domainId',
+  path: '/api/public/track/$domainId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/mcp': typeof McpRoute
+  '/pricing': typeof PricingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account': typeof AuthenticatedAccountRoute
@@ -124,12 +137,14 @@ export interface FileRoutesByFullPath {
   '/d/$domain': typeof DDomainRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/api/public/track/$domainId': typeof ApiPublicTrackDomainIdRoute
   '/api/public/webhooks/escrow': typeof ApiPublicWebhooksEscrowRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/mcp': typeof McpRoute
+  '/pricing': typeof PricingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account': typeof AuthenticatedAccountRoute
@@ -141,6 +156,7 @@ export interface FileRoutesByTo {
   '/d/$domain': typeof DDomainRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/api/public/track/$domainId': typeof ApiPublicTrackDomainIdRoute
   '/api/public/webhooks/escrow': typeof ApiPublicWebhooksEscrowRoute
 }
 export interface FileRoutesById {
@@ -149,6 +165,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/mcp': typeof McpRoute
+  '/pricing': typeof PricingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
@@ -160,6 +177,7 @@ export interface FileRoutesById {
   '/d/$domain': typeof DDomainRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/api/public/track/$domainId': typeof ApiPublicTrackDomainIdRoute
   '/api/public/webhooks/escrow': typeof ApiPublicWebhooksEscrowRoute
 }
 export interface FileRouteTypes {
@@ -168,6 +186,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/mcp'
+    | '/pricing'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/account'
@@ -179,12 +198,14 @@ export interface FileRouteTypes {
     | '/d/$domain'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/api/public/track/$domainId'
     | '/api/public/webhooks/escrow'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/mcp'
+    | '/pricing'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/account'
@@ -196,6 +217,7 @@ export interface FileRouteTypes {
     | '/d/$domain'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/api/public/track/$domainId'
     | '/api/public/webhooks/escrow'
   id:
     | '__root__'
@@ -203,6 +225,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/mcp'
+    | '/pricing'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/account'
@@ -214,6 +237,7 @@ export interface FileRouteTypes {
     | '/d/$domain'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/api/public/track/$domainId'
     | '/api/public/webhooks/escrow'
   fileRoutesById: FileRoutesById
 }
@@ -222,16 +246,25 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   McpRoute: typeof McpRoute
+  PricingRoute: typeof PricingRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   DDomainRoute: typeof DDomainRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPublicTrackDomainIdRoute: typeof ApiPublicTrackDomainIdRoute
   ApiPublicWebhooksEscrowRoute: typeof ApiPublicWebhooksEscrowRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mcp': {
       id: '/mcp'
       path: '/mcp'
@@ -344,6 +377,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksEscrowRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/track/$domainId': {
+      id: '/api/public/track/$domainId'
+      path: '/api/public/track/$domainId'
+      fullPath: '/api/public/track/$domainId'
+      preLoaderRoute: typeof ApiPublicTrackDomainIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -373,12 +413,14 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   McpRoute: McpRoute,
+  PricingRoute: PricingRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   DDomainRoute: DDomainRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPublicTrackDomainIdRoute: ApiPublicTrackDomainIdRoute,
   ApiPublicWebhooksEscrowRoute: ApiPublicWebhooksEscrowRoute,
 }
 export const routeTree = rootRouteImport

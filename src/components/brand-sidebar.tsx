@@ -1,7 +1,7 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard, Globe2, MessagesSquare, LayoutTemplate,
-  Sparkles, User, LogOut, Search, Menu, X,
+  Sparkles, User, LogOut, Search, Menu, X, CreditCard,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
@@ -22,6 +22,7 @@ const NAV_TOOLS: NavItem[] = [
 
 const NAV_ACCOUNT: NavItem[] = [
   { num: "06", label: "Account",     to: "/account", icon: User },
+  { num: "07", label: "Plans",       to: "/pricing", icon: CreditCard },
 ];
 
 export function BrandSidebar() {

@@ -17,15 +17,22 @@ import {
   Radio,
   Activity,
   TrendingDown,
+  Send,
+  Map as MapIcon,
 } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { appraiseDomain } from "@/lib/gadget.functions";
 import { Progress } from "@/components/ui/progress";
+import { OutboundPanel } from "@/components/outbound-panel";
+import { VisitorMap } from "@/components/visitor-map";
 
 export const Route = createFileRoute("/_authenticated/gadget-ai")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    domain: typeof s.domain === "string" ? s.domain : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>) => {
+    const out: { domain?: string; tab?: "outbound" | "map" | "appraisal" } = {};
+    if (typeof s.domain === "string") out.domain = s.domain;
+    if (s.tab === "outbound" || s.tab === "map" || s.tab === "appraisal") out.tab = s.tab;
+    return out;
+  },
   component: GadgetAI,
 });
 
@@ -51,7 +58,8 @@ const statusTone: Record<string, string> = {
 
 function GadgetAI() {
   const appraise = useServerFn(appraiseDomain);
-  const { domain: initialDomain } = Route.useSearch();
+  const { domain: initialDomain, tab: initialTab } = Route.useSearch();
+  const [tab, setTab] = useState<"appraisal" | "outbound" | "map">(initialTab ?? "appraisal");
   const [domain, setDomain] = useState(initialDomain ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,50 +97,99 @@ function GadgetAI() {
     <PageShell
       eyebrow="03 · Gadget+"
       title="gadget+ Domain Intelligence"
-      description="Institutional-grade appraisal plus a live market pulse — comparable sales, TLD ecosystem, brand score, long-term thesis, and realtime signals. Powered by Gemini."
+      description="Institutional-grade appraisal, outbound buyer discovery, and live visitor geolocation — one command center per domain."
       icon={Sparkles}
     >
-      <form onSubmit={run} className="mb-8 flex flex-col sm:flex-row gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            value={domain}
-            onChange={(e) => setDomain(e.target.value)}
-            placeholder="Enter a domain (e.g. sarl.com)"
-            className="w-full h-12 pl-10 pr-4 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
-            disabled={loading}
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading || domain.trim().length < 3}
-          className="h-12 px-6 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 disabled:opacity-50 inline-flex items-center gap-2"
-        >
-          {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Analyzing…</> : <>Run Gadget+</>}
-        </button>
-      </form>
+      {/* Tabs */}
+      <div className="mb-6 inline-flex items-center gap-1 rounded-xl border border-border bg-card p-1">
+        <TabBtn active={tab === "appraisal"} onClick={() => setTab("appraisal")} icon={<Sparkles className="h-3.5 w-3.5" />}>Appraisal</TabBtn>
+        <TabBtn active={tab === "outbound"} onClick={() => setTab("outbound")} icon={<Send className="h-3.5 w-3.5" />}>Outbound</TabBtn>
+        <TabBtn active={tab === "map"} onClick={() => setTab("map")} icon={<MapIcon className="h-3.5 w-3.5" />}>Visitor Map</TabBtn>
+      </div>
 
-      {error && (
-        <div className="mb-6 rounded-lg border border-rose-500/30 bg-rose-500/5 p-4 text-sm text-rose-700">
-          {error}
-        </div>
+      {tab === "appraisal" && (
+        <>
+          <form onSubmit={run} className="mb-8 flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                placeholder="Enter a domain (e.g. sarl.com)"
+                className="w-full h-12 pl-10 pr-4 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                disabled={loading}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading || domain.trim().length < 3}
+              className="h-12 px-6 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 disabled:opacity-50 inline-flex items-center gap-2"
+            >
+              {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Analyzing…</> : <>Run Gadget+</>}
+            </button>
+          </form>
+
+          {error && (
+            <div className="mb-6 rounded-lg border border-rose-500/30 bg-rose-500/5 p-4 text-sm text-rose-700">
+              {error}
+            </div>
+          )}
+
+          {loading && <AppraisalSkeleton />}
+
+          {report && !loading && <Report r={report} domain={domain} />}
+
+          {!report && !loading && <LivePulse />}
+        </>
       )}
 
-      {loading && (
-        <div className="rounded-xl border border-border bg-card p-10 text-center">
-          <Loader2 className="h-6 w-6 animate-spin mx-auto text-emerald-600 mb-3" />
-          <div className="text-sm text-muted-foreground">
-            Gemini is analyzing WHOIS, TLD ecosystem, comparable sales, brand fit, and long-term thesis…
+      {tab === "outbound" && <OutboundPanel initialDomain={domain || initialDomain} />}
+
+      {tab === "map" && (
+        <div className="space-y-4">
+          <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+            Real-time visitor geolocation across your entire portfolio. Every lander hit inserts a fresh ping.
           </div>
+          <VisitorMap height={520} />
         </div>
-      )}
-
-      {report && <Report r={report} domain={domain} />}
-
-      {!report && !loading && (
-        <LivePulse />
       )}
     </PageShell>
+  );
+}
+
+function TabBtn({
+  active, onClick, icon, children,
+}: { active: boolean; onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`h-9 px-4 inline-flex items-center gap-1.5 rounded-lg text-xs font-semibold transition ${
+        active ? "bg-emerald-500 text-white shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+      }`}
+    >
+      {icon} {children}
+    </button>
+  );
+}
+
+function AppraisalSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-border bg-card p-6 animate-pulse">
+        <div className="h-6 w-1/3 rounded bg-muted/60 mb-3" />
+        <div className="h-4 w-2/3 rounded bg-muted/60 mb-2" />
+        <div className="h-4 w-1/2 rounded bg-muted/60" />
+      </div>
+      <div className="grid md:grid-cols-3 gap-4">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="rounded-xl border border-border bg-card p-5 animate-pulse space-y-2">
+            <div className="h-4 w-1/2 rounded bg-muted/60" />
+            <div className="h-8 w-2/3 rounded bg-muted/60" />
+            <div className="h-3 w-full rounded bg-muted/60" />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
