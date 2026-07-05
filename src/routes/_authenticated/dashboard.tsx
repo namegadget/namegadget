@@ -48,13 +48,14 @@ function Dashboard() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
   const [expiryFilter, setExpiryFilter] = useState<ExpiryFilter>("All");
   const [page, setPage] = useState(1);
+  const [liveState, setLiveState] = useState<"connecting" | "live" | "offline">("connecting");
   const PAGE_SIZE = 25;
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
     void loadDomains();
 
-    // Realtime sync — any insert / update / delete refreshes the row locally
+    // Realtime sync — reflect true channel status in the header pulse
     const ch = supabase
       .channel("dashboard-domains")
       .on("postgres_changes", { event: "*", schema: "public", table: "domains" }, (payload) => {
@@ -65,7 +66,11 @@ function Dashboard() {
           return prev;
         });
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") setLiveState("live");
+        else if (status === "CHANNEL_ERROR" || status === "CLOSED" || status === "TIMED_OUT") setLiveState("offline");
+        else setLiveState("connecting");
+      });
     return () => { supabase.removeChannel(ch); };
   }, []);
 
