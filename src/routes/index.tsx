@@ -451,7 +451,6 @@ function Landing() {
 
       {/* HERO — Page Pulse style: centered, huge headline, solid accent line */}
       <section ref={heroRef} className="relative">
-        <div className="absolute inset-0 pointer-events-none [background:radial-gradient(70%_55%_at_50%_0%,color-mix(in_oklab,var(--primary)_10%,transparent),transparent_70%)]" />
         <div className="relative max-w-5xl mx-auto px-6 pt-10 md:pt-20 pb-14 md:pb-20 text-center">
           <div className="hero-eyebrow opacity-0 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground mb-8 shadow-sm">
             <span className="h-5 w-5 rounded-full gradient-brand inline-flex items-center justify-center">
@@ -489,11 +488,11 @@ function Landing() {
           <div className="hero-cta opacity-0 mt-8 flex flex-col items-center gap-2">
             <div className="flex -space-x-2">
               {[
-                "bg-gradient-to-br from-emerald-300 to-emerald-600",
-                "bg-gradient-to-br from-amber-300 to-orange-500",
-                "bg-gradient-to-br from-sky-300 to-indigo-500",
-                "bg-gradient-to-br from-rose-300 to-pink-500",
-                "bg-gradient-to-br from-teal-300 to-emerald-700",
+                "bg-emerald-500",
+                "bg-amber-500",
+                "bg-sky-500",
+                "bg-rose-500",
+                "bg-teal-500",
               ].map((c, i) => (
                 <div key={i} className={`h-8 w-8 rounded-full ring-2 ring-background ${c}`} />
               ))}
@@ -967,7 +966,7 @@ function Landing() {
       {/* CLOSING CTA */}
       <section className="relative py-16 md:py-20 border-t border-border">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="relative rounded-3xl gradient-brand overflow-hidden p-8 md:p-14 text-primary-foreground shadow-[0_40px_120px_-30px_color-mix(in_oklab,var(--primary)_60%,transparent)]">
+          <div className="relative rounded-3xl gradient-brand overflow-hidden p-8 md:p-14 text-primary-foreground">
             <div className="absolute inset-0 bg-grid opacity-20 pointer-events-none" />
             <div className="relative grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div>
