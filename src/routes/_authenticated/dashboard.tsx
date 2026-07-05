@@ -9,7 +9,7 @@ import {
   RefreshCw, Layers, Wallet, Filter, CircleDot,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { LanderGallery } from "@/components/landers";
+import { LanderGallery, LANDER_TEMPLATES } from "@/components/landers";
 import { enrichDomain, normalizeDomain, type DomainEnrichment } from "@/lib/domain-enrich";
 import { appraiseDomain, analyzeTechProfile, generateLivePulse } from "@/lib/gadget.functions";
 
@@ -23,6 +23,7 @@ type Domain = {
   status: "Parked" | "For Sale" | "Negotiating" | "Sold";
   appraised_value: number | null;
   created_at: string;
+  selected_lander: string;
 };
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -50,6 +51,20 @@ function Dashboard() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
     void loadDomains();
+
+    // Realtime sync — any insert / update / delete refreshes the row locally
+    const ch = supabase
+      .channel("dashboard-domains")
+      .on("postgres_changes", { event: "*", schema: "public", table: "domains" }, (payload) => {
+        setDomains((prev) => {
+          if (payload.eventType === "INSERT") return [payload.new as Domain, ...prev];
+          if (payload.eventType === "UPDATE") return prev.map((d) => d.id === (payload.new as Domain).id ? { ...d, ...(payload.new as Domain) } : d);
+          if (payload.eventType === "DELETE") return prev.filter((d) => d.id !== (payload.old as Domain).id);
+          return prev;
+        });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
   async function loadDomains() {
@@ -58,6 +73,14 @@ function Dashboard() {
     if (error) toast.error(error.message);
     setDomains((data as Domain[]) ?? []);
     setLoading(false);
+  }
+
+  async function updateLander(domainId: string, landerId: string) {
+    // Optimistic
+    setDomains((rows) => rows.map((r) => r.id === domainId ? { ...r, selected_lander: landerId } : r));
+    const { error } = await supabase.from("domains").update({ selected_lander: landerId }).eq("id", domainId);
+    if (error) toast.error(error.message);
+    else toast.success("Lander updated");
   }
 
   // Live counts (unfiltered) for the KPI + chip badges
@@ -199,33 +222,59 @@ function Dashboard() {
               : <NoMatchState onClear={() => { setStatusFilter("All"); setExpiryFilter("All"); setQuery(""); }} />
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="text-xs uppercase text-muted-foreground border-b border-border bg-muted/20">
+              <table className="w-full text-sm min-w-[960px]">
+                <thead className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground border-b border-border bg-muted/20">
                   <tr>
-                    <th className="text-left font-medium px-6 py-3">Domain</th>
-                    <th className="text-left font-medium px-6 py-3">Registrar</th>
-                    <th className="text-left font-medium px-6 py-3">Expiry</th>
-                    <th className="text-left font-medium px-6 py-3">Traffic</th>
-                    <th className="text-left font-medium px-6 py-3">Status</th>
-                    <th className="text-right font-medium px-6 py-3">Value</th>
+                    <th className="text-left font-medium px-5 py-3">Domain</th>
+                    <th className="text-left font-medium px-4 py-3">Visitors</th>
+                    <th className="text-left font-medium px-4 py-3">Expires</th>
+                    <th className="text-left font-medium px-4 py-3">Gadget+</th>
+                    <th className="text-left font-medium px-4 py-3">Lander</th>
+                    <th className="text-left font-medium px-4 py-3">Registrar</th>
+                    <th className="text-right font-medium px-5 py-3 w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((d) => (
                     <tr
                       key={d.id}
-                      onClick={() => setSelected(d)}
-                      className="border-b border-border last:border-0 hover:bg-primary/5 cursor-pointer transition"
+                      className="group border-b border-border last:border-0 hover:bg-primary/5 transition"
                     >
-                      <td className="px-6 py-4 font-semibold text-foreground">{d.domain_name}</td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex rounded-md border border-border bg-muted/50 px-2 py-0.5 text-xs">{d.registrar}</span>
+                      <td className="px-5 py-3.5">
+                        <DomainCell name={d.domain_name} />
                       </td>
-                      <td className="px-6 py-4"><ExpiryBadge days={daysUntil(d.expiry_date)} /></td>
-                      <td className="px-6 py-4"><TrafficIndicator count={d.visitor_count} /></td>
-                      <td className="px-6 py-4"><StatusBadge status={d.status} /></td>
-                      <td className="px-6 py-4 text-right font-mono text-xs text-muted-foreground">
-                        {d.appraised_value ? `$${d.appraised_value.toLocaleString()}` : "—"}
+                      <td className="px-4 py-3.5"><TrafficIndicator count={d.visitor_count} /></td>
+                      <td className="px-4 py-3.5"><CountdownBadge iso={d.expiry_date} /></td>
+                      <td className="px-4 py-3.5">
+                        <Link
+                          to="/gadget-ai"
+                          search={{ domain: d.domain_name }}
+                          onClick={(e) => e.stopPropagation()}
+                          title="Run Gadget+ appraisal & outbound"
+                          className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-primary/30 bg-primary/5 text-primary text-[11px] font-semibold hover:bg-primary/10 hover:border-primary/60 active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+                        >
+                          <Sparkles className="h-3 w-3" /> Gadget+
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <LanderSelect
+                          value={d.selected_lander || "afternic"}
+                          onChange={(v: string) => void updateLander(d.id, v)}
+                        />
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span className="inline-flex rounded-md border border-border bg-muted/40 px-2 py-0.5 text-[11px] font-mono text-muted-foreground max-w-[140px] truncate" title={d.registrar}>
+                          {d.registrar}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-right">
+                        <button
+                          onClick={() => setSelected(d)}
+                          title="Open Gadget suite"
+                          className="opacity-0 group-hover:opacity-100 focus:opacity-100 h-7 w-7 inline-flex items-center justify-center rounded-md border border-border hover:border-primary/50 hover:bg-primary/10 text-muted-foreground hover:text-primary transition"
+                        >
+                          <Layers className="h-3.5 w-3.5" />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -357,6 +406,95 @@ function Chip({
     >
       {children}
     </button>
+  );
+}
+
+
+/* ===== New table cells: Domain (favicon+copy) · Countdown · Lander select ===== */
+
+function DomainCell({ name }: { name: string }) {
+  const [copied, setCopied] = useState(false);
+  async function copy(e: React.MouseEvent) {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(name);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch { /* ignore */ }
+  }
+  return (
+    <div className="flex items-center gap-2.5 min-w-0">
+      <img
+        src={`https://www.google.com/s2/favicons?domain=${name}&sz=32`}
+        alt=""
+        width={16}
+        height={16}
+        className="h-4 w-4 rounded-sm shrink-0 opacity-80 bg-muted"
+        onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
+      />
+      <a
+        href={`https://${name}`}
+        target="_blank"
+        rel="noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className="font-semibold text-foreground hover:text-primary truncate transition"
+      >
+        {name}
+      </a>
+      <button
+        onClick={copy}
+        title={copied ? "Copied!" : "Copy domain"}
+        className="opacity-0 group-hover:opacity-100 focus:opacity-100 h-6 w-6 inline-flex items-center justify-center rounded border border-transparent hover:border-border hover:bg-muted text-muted-foreground hover:text-foreground transition"
+      >
+        {copied ? <CircleDot className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+      </button>
+    </div>
+  );
+}
+
+function CountdownBadge({ iso }: { iso: string }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  const ms = new Date(iso).getTime() - now;
+  const days = Math.ceil(ms / 86_400_000);
+  const expired = days < 0;
+  const tone = expired
+    ? "border-destructive/40 bg-destructive/10 text-destructive"
+    : days < 30 ? "border-red-500/40 bg-red-500/10 text-red-700"
+    : days < 90 ? "border-amber-500/40 bg-amber-500/10 text-amber-700"
+    : "border-emerald-500/40 bg-emerald-500/10 text-emerald-700";
+  const label = expired
+    ? `${Math.abs(days)}d expired`
+    : days === 0 ? "today"
+    : days < 30 ? `${days}d · renew`
+    : days < 365 ? `${days}d`
+    : `${Math.floor(days / 365)}y ${Math.floor((days % 365) / 30)}m`;
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-mono ${tone}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${expired || days < 30 ? "bg-current animate-pulse" : "bg-current"}`} />
+      {label}
+    </span>
+  );
+}
+
+function LanderSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="relative inline-block">
+      <select
+        value={value}
+        onClick={(e) => e.stopPropagation()}
+        onChange={(e) => onChange(e.target.value)}
+        className="appearance-none h-8 min-w-[140px] pl-2.5 pr-7 rounded-md border border-border bg-background text-[11px] font-medium hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition cursor-pointer"
+      >
+        {LANDER_TEMPLATES.map((t) => (
+          <option key={t.id} value={t.id}>{t.label}</option>
+        ))}
+      </select>
+      <LayoutTemplate className="h-3 w-3 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+    </div>
   );
 }
 

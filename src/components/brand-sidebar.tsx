@@ -43,10 +43,13 @@ export function BrandSidebar() {
 
   const sidebarInner = (
     <>
-      {/* Brand mark */}
+      {/* Brand mark — rounded-square logo tile */}
       <div className="px-5 pt-6 pb-5 border-b border-border flex items-center justify-between">
         <Link to="/dashboard" className="flex items-center gap-2.5 group">
-          <img src={lightLogo.url} alt="NameGadget" className="h-7 w-auto" />
+          <span className="h-9 w-9 rounded-xl border border-border bg-card shadow-sm overflow-hidden flex items-center justify-center">
+            <img src={lightLogo.url} alt="NameGadget" className="h-6 w-6 object-contain" />
+          </span>
+          <span className="font-semibold text-[15px] tracking-tight text-foreground">NameGadget</span>
         </Link>
         <button
           onClick={() => setOpen(false)}
@@ -78,7 +81,7 @@ export function BrandSidebar() {
       {/* Footer / user */}
       <div className="px-4 py-4 border-t border-border space-y-3 bg-muted/20">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold flex-shrink-0">
+          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold flex-shrink-0 shadow-sm">
             {email.slice(0, 1).toUpperCase() || "U"}
           </div>
           <div className="min-w-0 flex-1">
@@ -106,7 +109,10 @@ export function BrandSidebar() {
       {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-background border-b border-border flex items-center justify-between px-4">
         <Link to="/dashboard" className="flex items-center gap-2">
-          <img src={lightLogo.url} alt="NameGadget" className="h-6 w-auto" />
+          <span className="h-8 w-8 rounded-lg border border-border bg-card shadow-sm overflow-hidden flex items-center justify-center">
+            <img src={lightLogo.url} alt="NameGadget" className="h-5 w-5 object-contain" />
+          </span>
+          <span className="font-semibold text-sm text-foreground">NameGadget</span>
         </Link>
         <button
           onClick={() => setOpen(true)}

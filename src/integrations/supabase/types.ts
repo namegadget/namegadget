@@ -117,6 +117,7 @@ export type Database = {
           id: string
           price: number | null
           registrar: string
+          selected_lander: string
           status: string
           updated_at: string
           user_id: string
@@ -130,6 +131,7 @@ export type Database = {
           id?: string
           price?: number | null
           registrar: string
+          selected_lander?: string
           status?: string
           updated_at?: string
           user_id: string
@@ -143,6 +145,7 @@ export type Database = {
           id?: string
           price?: number | null
           registrar?: string
+          selected_lander?: string
           status?: string
           updated_at?: string
           user_id?: string
