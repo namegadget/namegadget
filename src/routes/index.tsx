@@ -428,72 +428,88 @@ function Landing() {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      {/* nav */}
-      <nav className="relative z-20 flex items-center justify-between px-6 md:px-12 py-5">
+      {/* nav — centered menu, à la Page Pulse */}
+      <nav className="relative z-20 flex items-center justify-between px-6 md:px-10 py-5 max-w-7xl mx-auto w-full">
         <div className="flex items-center gap-2">
           <img src={logo.url} alt="NameGadget" className="h-8 w-auto" />
         </div>
-        <div className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-foreground/80 absolute left-1/2 -translate-x-1/2">
           <a href="#features" className="hover:text-foreground transition">Features</a>
           <a href="#workflow" className="hover:text-foreground transition">How It Works</a>
           <a href="#pricing" className="hover:text-foreground transition">Pricing</a>
           <a href="#faq" className="hover:text-foreground transition">FAQ</a>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={go} className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium hover:bg-secondary transition">
-            Sign in
+          <button onClick={go} className="rounded-full px-4 py-2 text-sm font-medium text-foreground/80 hover:bg-secondary transition">
+            Sign In
           </button>
-          <button onClick={go} className="hidden sm:inline-flex rounded-md gradient-brand text-primary-foreground px-4 py-2 text-sm font-semibold hover:opacity-95 transition">
+          <button onClick={go} className="inline-flex rounded-full bg-primary text-primary-foreground px-5 py-2 text-sm font-semibold hover:opacity-95 transition shadow-sm">
             Get Started Free
           </button>
         </div>
       </nav>
 
-      {/* HERO */}
+      {/* HERO — Page Pulse style: centered, huge headline, solid accent line */}
       <section ref={heroRef} className="relative">
-        <div className="absolute inset-0 bg-grid opacity-60 pointer-events-none" />
-        <div className="absolute inset-0 pointer-events-none [background:radial-gradient(60%_50%_at_50%_0%,color-mix(in_oklab,var(--primary)_14%,transparent),transparent_70%)]" />
-        <div className="relative max-w-6xl mx-auto px-6 pt-8 md:pt-14 pb-16 md:pb-24 text-center">
-          <div className="hero-eyebrow opacity-0 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary mb-6">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-glow" />
-            Live · 0% commission · BYOL
+        <div className="absolute inset-0 pointer-events-none [background:radial-gradient(70%_55%_at_50%_0%,color-mix(in_oklab,var(--primary)_10%,transparent),transparent_70%)]" />
+        <div className="relative max-w-5xl mx-auto px-6 pt-10 md:pt-20 pb-14 md:pb-20 text-center">
+          <div className="hero-eyebrow opacity-0 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground mb-8 shadow-sm">
+            <span className="h-5 w-5 rounded-full gradient-brand inline-flex items-center justify-center">
+              <Sparkles className="h-3 w-3 text-primary-foreground" />
+            </span>
+            <span className="tracking-wide uppercase">With AI Superpowers</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
-            <span className="block">{splitChars("Your Domain Portfolio's")}</span>
-            <span className="block gradient-brand bg-clip-text text-transparent">
-              {splitChars("Live Heartbeat.")}
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.05] text-foreground">
+            <span className="block">{splitChars("Domain Portfolio Ops")}</span>
+            <span className="block text-primary mt-2">
+              {splitChars("That Finally Feel Simple")}
             </span>
-            <span className="block">{splitChars("0% Commission.")}</span>
           </h1>
 
-          <p className="hero-sub opacity-0 mt-6 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Real-time RDAP + DNS telemetry across your entire portfolio. AI appraisal, outbound
-            corporate leads, and a peer-to-peer deal room where you negotiate directly — no
-            brokers, no fees, no friction.
+          <p className="hero-sub opacity-0 mt-6 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Know what's driving offers, what's not, and what to sell across your entire portfolio —
+            with zero commissions, zero brokers, and zero analytics headaches.
           </p>
 
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="mt-10 flex flex-col items-center justify-center gap-3">
             <button
               ref={ctaRef}
               onClick={go}
-              className="hero-cta opacity-0 inline-flex items-center gap-2 rounded-md gradient-brand text-primary-foreground px-6 py-3 text-sm font-semibold glow-cyan hover:opacity-95 transition"
+              className="hero-cta opacity-0 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-7 py-3.5 text-sm font-semibold hover:opacity-95 transition shadow-lg shadow-primary/25"
             >
-              <Plus className="h-4 w-4" /> Launch Dashboard Free <ArrowRight className="h-4 w-4" />
+              Get Started Free <ArrowRight className="h-4 w-4" />
             </button>
-            <a
-              href="#pricing"
-              className="hero-cta opacity-0 inline-flex items-center gap-2 rounded-md border border-border bg-card px-6 py-3 text-sm font-semibold hover:bg-secondary transition"
-            >
-              Explore Tiers
-            </a>
+            <div className="hero-cta opacity-0 text-xs text-muted-foreground">
+              No credit card needed.
+            </div>
           </div>
 
-          <div className="hero-cta opacity-0 mt-5 text-xs text-muted-foreground">
-            No credit card. No brokers. Ever.
+          {/* trust row — avatars + stars + line */}
+          <div className="hero-cta opacity-0 mt-8 flex flex-col items-center gap-2">
+            <div className="flex -space-x-2">
+              {[
+                "bg-gradient-to-br from-emerald-300 to-emerald-600",
+                "bg-gradient-to-br from-amber-300 to-orange-500",
+                "bg-gradient-to-br from-sky-300 to-indigo-500",
+                "bg-gradient-to-br from-rose-300 to-pink-500",
+                "bg-gradient-to-br from-teal-300 to-emerald-700",
+              ].map((c, i) => (
+                <div key={i} className={`h-8 w-8 rounded-full ring-2 ring-background ${c}`} />
+              ))}
+            </div>
+            <div className="flex items-center gap-0.5 text-amber-400 text-sm">
+              {"★★★★★"}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Trusted by domainers &amp; portfolio flippers worldwide
+            </div>
+            <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-medium text-foreground/80 shadow-sm">
+              <span>🏆</span> 0% commission · pure P2P · BYOL
+            </div>
           </div>
 
-          <div className="hero-dash opacity-0 mt-12 md:mt-16 max-w-4xl mx-auto text-left">
+          <div className="hero-dash opacity-0 mt-14 md:mt-20 max-w-5xl mx-auto text-left">
             <LiveDashboard />
           </div>
         </div>
