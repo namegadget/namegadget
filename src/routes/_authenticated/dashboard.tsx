@@ -23,7 +23,10 @@ type Domain = {
   status: "Parked" | "For Sale" | "Negotiating" | "Sold";
   appraised_value: number | null;
   created_at: string;
+  selected_lander: string;
 };
+
+import { LANDER_TEMPLATES } from "@/components/landers";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
