@@ -821,18 +821,18 @@ function GadgetView({ domain }: { domain: Domain }) {
   return (
     <div className="space-y-5">
       {/* HERO */}
-      <section className="rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-primary via-primary/90 to-violet-600 text-primary-foreground p-6 relative">
+      <section className="rounded-2xl overflow-hidden border border-border bg-card p-6 relative">
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur px-3 py-1 text-[10px] uppercase tracking-widest">
-            <Sparkles className="h-3 w-3" /> Domain Appraisal
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-[10px] uppercase tracking-widest text-foreground">
+            <Sparkles className="h-3 w-3 text-primary" /> Domain Appraisal
           </span>
-          <button onClick={run} className="text-[11px] inline-flex items-center gap-1 opacity-80 hover:opacity-100">
+          <button onClick={run} className="text-[11px] inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
             <RefreshCw className="h-3 w-3" /> Re-run
           </button>
         </div>
-        <h1 className="mt-4 text-4xl font-black tracking-tight">{domain.domain_name}</h1>
-        <p className="mt-1 text-sm opacity-90">{data.meaning}</p>
-        <div className="mt-4 flex flex-wrap gap-3 text-[11px] opacity-90">
+        <h1 className="mt-4 text-4xl font-bold tracking-tight text-foreground">{domain.domain_name}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{data.meaning}</p>
+        <div className="mt-4 flex flex-wrap gap-3 text-[11px] text-muted-foreground">
           <span>📅 {new Date().toLocaleString("en-US", { month: "long", year: "numeric" })}</span>
           <span>🧠 {data.algorithm}</span>
           <span>🌐 .{domain.domain_name.split(".").slice(-1)[0]} TLD</span>
