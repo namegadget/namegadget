@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Sparkles,
   Search,
@@ -14,12 +14,18 @@ import {
   TrendingUp,
   Building2,
   MapPin,
+  Radio,
+  Activity,
+  TrendingDown,
 } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { appraiseDomain } from "@/lib/gadget.functions";
 import { Progress } from "@/components/ui/progress";
 
 export const Route = createFileRoute("/_authenticated/gadget-ai")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    domain: typeof s.domain === "string" ? s.domain : undefined,
+  }),
   component: GadgetAI,
 });
 

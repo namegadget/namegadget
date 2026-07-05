@@ -15,7 +15,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DDomainRouteImport } from './routes/d.$domain'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as AuthenticatedLandersRouteImport } from './routes/_authenticated/landers'
-import { Route as AuthenticatedGadgetLiveRouteImport } from './routes/_authenticated/gadget-live'
 import { Route as AuthenticatedGadgetAiRouteImport } from './routes/_authenticated/gadget-ai'
 import { Route as AuthenticatedDealRoomRouteImport } from './routes/_authenticated/deal-room'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -51,11 +50,6 @@ const AuthenticatedLandersRoute = AuthenticatedLandersRouteImport.update({
   path: '/landers',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedGadgetLiveRoute = AuthenticatedGadgetLiveRouteImport.update({
-  id: '/gadget-live',
-  path: '/gadget-live',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedGadgetAiRoute = AuthenticatedGadgetAiRouteImport.update({
   id: '/gadget-ai',
   path: '/gadget-ai',
@@ -89,7 +83,6 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/deal-room': typeof AuthenticatedDealRoomRoute
   '/gadget-ai': typeof AuthenticatedGadgetAiRoute
-  '/gadget-live': typeof AuthenticatedGadgetLiveRoute
   '/landers': typeof AuthenticatedLandersRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/d/$domain': typeof DDomainRoute
@@ -102,7 +95,6 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/deal-room': typeof AuthenticatedDealRoomRoute
   '/gadget-ai': typeof AuthenticatedGadgetAiRoute
-  '/gadget-live': typeof AuthenticatedGadgetLiveRoute
   '/landers': typeof AuthenticatedLandersRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/d/$domain': typeof DDomainRoute
@@ -117,7 +109,6 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/deal-room': typeof AuthenticatedDealRoomRoute
   '/_authenticated/gadget-ai': typeof AuthenticatedGadgetAiRoute
-  '/_authenticated/gadget-live': typeof AuthenticatedGadgetLiveRoute
   '/_authenticated/landers': typeof AuthenticatedLandersRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
   '/d/$domain': typeof DDomainRoute
@@ -132,7 +123,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/deal-room'
     | '/gadget-ai'
-    | '/gadget-live'
     | '/landers'
     | '/portfolio'
     | '/d/$domain'
@@ -145,7 +135,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/deal-room'
     | '/gadget-ai'
-    | '/gadget-live'
     | '/landers'
     | '/portfolio'
     | '/d/$domain'
@@ -159,7 +148,6 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/deal-room'
     | '/_authenticated/gadget-ai'
-    | '/_authenticated/gadget-live'
     | '/_authenticated/landers'
     | '/_authenticated/portfolio'
     | '/d/$domain'
@@ -218,13 +206,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLandersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/gadget-live': {
-      id: '/_authenticated/gadget-live'
-      path: '/gadget-live'
-      fullPath: '/gadget-live'
-      preLoaderRoute: typeof AuthenticatedGadgetLiveRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/gadget-ai': {
       id: '/_authenticated/gadget-ai'
       path: '/gadget-ai'
@@ -268,7 +249,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDealRoomRoute: typeof AuthenticatedDealRoomRoute
   AuthenticatedGadgetAiRoute: typeof AuthenticatedGadgetAiRoute
-  AuthenticatedGadgetLiveRoute: typeof AuthenticatedGadgetLiveRoute
   AuthenticatedLandersRoute: typeof AuthenticatedLandersRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
 }
@@ -278,7 +258,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDealRoomRoute: AuthenticatedDealRoomRoute,
   AuthenticatedGadgetAiRoute: AuthenticatedGadgetAiRoute,
-  AuthenticatedGadgetLiveRoute: AuthenticatedGadgetLiveRoute,
   AuthenticatedLandersRoute: AuthenticatedLandersRoute,
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
 }
