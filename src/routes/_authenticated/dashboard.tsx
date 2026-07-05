@@ -993,17 +993,17 @@ function GadgetView({ domain }: { domain: Domain }) {
       </Card>
 
       {/* LONG-TERM INVESTMENT */}
-      <section className="rounded-2xl border-2 border-violet-500/40 bg-gradient-to-br from-violet-500/5 to-primary/5 p-5">
-        <h4 className="font-bold text-violet-700 flex items-center gap-2 mb-3">📈 Long-Term Investment Value (3-7 Year Hold)</h4>
+      <section className="rounded-2xl border border-border bg-card p-5">
+        <h4 className="font-bold text-foreground flex items-center gap-2 mb-3">📈 Long-Term Investment Value (3-7 Year Hold)</h4>
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="rounded-xl bg-gradient-to-br from-violet-500 to-violet-700 text-white p-4">
-            <p className="text-[10px] uppercase tracking-widest opacity-90">Projected Long-Term Value</p>
-            <p className="text-2xl font-black mt-1">{fmt(data.longTerm.projected)}+</p>
-            <p className="text-[10px] opacity-80 mt-1">3-7 year patient hold</p>
+          <div className="rounded-xl border border-border bg-background p-4">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Projected Long-Term Value</p>
+            <p className="text-2xl font-bold mt-1 text-foreground">{fmt(data.longTerm.projected)}+</p>
+            <p className="text-[10px] text-muted-foreground mt-1">3-7 year patient hold</p>
           </div>
-          <div className="rounded-xl border-2 border-violet-500/40 bg-background p-4">
+          <div className="rounded-xl border border-border bg-background p-4">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Long-Term Range</p>
-            <p className="text-2xl font-black mt-1 text-violet-700">{fmt(data.longTerm.rangeLow)} – {fmt(data.longTerm.rangeHigh)}</p>
+            <p className="text-2xl font-bold mt-1 text-primary">{fmt(data.longTerm.rangeLow)} – {fmt(data.longTerm.rangeHigh)}</p>
             <p className="text-[10px] text-muted-foreground mt-1">Market growth + scarcity</p>
           </div>
         </div>
