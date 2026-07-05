@@ -302,31 +302,31 @@ function Report({ r, domain }: { r: Appraisal; domain: string }) {
       </Card>
 
       {/* Long-Term */}
-      <div className="rounded-2xl border-2 border-violet-500/30 bg-violet-500/5 p-6 md:p-8">
+      <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="h-5 w-5 text-violet-600" />
-          <h3 className="font-semibold text-lg">Long-Term Investment Value (3–7 Year Hold)</h3>
+          <TrendingUp className="h-5 w-5 text-primary" />
+          <h3 className="font-semibold text-lg text-foreground">Long-Term Investment Value (3–7 Year Hold)</h3>
         </div>
         <div className="grid md:grid-cols-2 gap-4 mb-6">
-          <div className="rounded-xl bg-gradient-to-br from-violet-600 to-purple-700 text-white p-6 text-center">
-            <div className="text-[10px] font-mono uppercase tracking-widest opacity-80">Projected Long-Term Value</div>
-            <div className="text-4xl font-bold my-3">{fmtUSD(r.longTerm.projected)}+</div>
-            <div className="text-xs opacity-80">3–7 year patient hold strategy</div>
+          <div className="rounded-xl border border-border bg-background p-6 text-center">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Projected Long-Term Value</div>
+            <div className="text-4xl font-bold my-3 text-foreground">{fmtUSD(r.longTerm.projected)}+</div>
+            <div className="text-xs text-muted-foreground">3–7 year patient hold strategy</div>
           </div>
-          <div className="rounded-xl border border-violet-500/40 bg-white p-6 text-center">
+          <div className="rounded-xl border border-primary/40 bg-primary/5 p-6 text-center">
             <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Long-Term Range</div>
-            <div className="text-4xl font-bold my-3 text-violet-700">
+            <div className="text-4xl font-bold my-3 text-primary">
               {fmtUSD(r.longTerm.rangeLow)} – {fmtUSD(r.longTerm.rangeHigh)}
             </div>
             <div className="text-xs text-muted-foreground">Based on market growth + scarcity appreciation</div>
           </div>
         </div>
 
-        <div className="text-violet-700 font-semibold text-sm mb-3">Investment Thesis</div>
+        <div className="text-foreground font-semibold text-sm mb-3">Investment Thesis</div>
         <ul className="space-y-2.5 mb-6 text-sm">
           {r.longTerm.thesis.map((t, i) => (
-            <li key={i} className="pl-4 border-l-2 border-violet-400/40">
-              <span className="font-semibold">{t.title}:</span> <span className="text-muted-foreground">{t.body}</span>
+            <li key={i} className="pl-4 border-l-2 border-primary/40">
+              <span className="font-semibold text-foreground">{t.title}:</span> <span className="text-muted-foreground">{t.body}</span>
             </li>
           ))}
         </ul>
