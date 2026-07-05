@@ -43,10 +43,13 @@ export function BrandSidebar() {
 
   const sidebarInner = (
     <>
-      {/* Brand mark */}
+      {/* Brand mark — rounded-square logo tile */}
       <div className="px-5 pt-6 pb-5 border-b border-border flex items-center justify-between">
         <Link to="/dashboard" className="flex items-center gap-2.5 group">
-          <img src={lightLogo.url} alt="NameGadget" className="h-7 w-auto" />
+          <span className="h-9 w-9 rounded-xl border border-border bg-card shadow-sm overflow-hidden flex items-center justify-center">
+            <img src={lightLogo.url} alt="NameGadget" className="h-6 w-6 object-contain" />
+          </span>
+          <span className="font-semibold text-[15px] tracking-tight text-foreground">NameGadget</span>
         </Link>
         <button
           onClick={() => setOpen(false)}
