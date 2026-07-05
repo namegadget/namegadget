@@ -14,6 +14,7 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UHandleRouteImport } from './routes/u.$handle'
 import { Route as DDomainRouteImport } from './routes/d.$domain'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
 import { Route as AuthenticatedLandersRouteImport } from './routes/_authenticated/landers'
@@ -50,6 +51,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UHandleRoute = UHandleRouteImport.update({
+  id: '/u/$handle',
+  path: '/u/$handle',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DDomainRoute = DDomainRouteImport.update({
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/landers': typeof AuthenticatedLandersRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/d/$domain': typeof DDomainRoute
+  '/u/$handle': typeof UHandleRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/track/$domainId': typeof ApiPublicTrackDomainIdRoute
@@ -154,6 +161,7 @@ export interface FileRoutesByTo {
   '/landers': typeof AuthenticatedLandersRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/d/$domain': typeof DDomainRoute
+  '/u/$handle': typeof UHandleRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/track/$domainId': typeof ApiPublicTrackDomainIdRoute
@@ -175,6 +183,7 @@ export interface FileRoutesById {
   '/_authenticated/landers': typeof AuthenticatedLandersRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
   '/d/$domain': typeof DDomainRoute
+  '/u/$handle': typeof UHandleRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/track/$domainId': typeof ApiPublicTrackDomainIdRoute
@@ -196,6 +205,7 @@ export interface FileRouteTypes {
     | '/landers'
     | '/portfolio'
     | '/d/$domain'
+    | '/u/$handle'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/track/$domainId'
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
     | '/landers'
     | '/portfolio'
     | '/d/$domain'
+    | '/u/$handle'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/track/$domainId'
@@ -235,6 +246,7 @@ export interface FileRouteTypes {
     | '/_authenticated/landers'
     | '/_authenticated/portfolio'
     | '/d/$domain'
+    | '/u/$handle'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/track/$domainId'
@@ -250,6 +262,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   DDomainRoute: typeof DDomainRoute
+  UHandleRoute: typeof UHandleRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicTrackDomainIdRoute: typeof ApiPublicTrackDomainIdRoute
@@ -291,6 +304,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/u/$handle': {
+      id: '/u/$handle'
+      path: '/u/$handle'
+      fullPath: '/u/$handle'
+      preLoaderRoute: typeof UHandleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/d/$domain': {
@@ -418,6 +438,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   DDomainRoute: DDomainRoute,
+  UHandleRoute: UHandleRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicTrackDomainIdRoute: ApiPublicTrackDomainIdRoute,
