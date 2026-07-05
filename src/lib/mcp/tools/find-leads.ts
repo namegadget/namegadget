@@ -46,12 +46,12 @@ ${industry ? `Industry hint: ${industry}` : ""}
 For each lead include: company name, primary website, a plausible generic contact email (info@, hello@, contact@), a plausible phone (with country code or "unknown"), a one-sentence reason it is a fit, and a 0-100 relevance score. Prefer well-known active companies whose brand or product line overlaps the domain keyword.`;
 
     try {
-      const { experimental_output } = await generateText({
+      const { output } = await generateText({
         model: gateway("google/gemini-3-flash-preview"),
         prompt,
-        experimental_output: Output.object({ schema: LeadsSchema }),
+        output: Output.object({ schema: LeadsSchema }),
       });
-      const leads = experimental_output.leads.slice(0, max);
+      const leads = output.leads.slice(0, max);
       return {
         content: [{ type: "text", text: JSON.stringify(leads, null, 2) }],
         structuredContent: { domain, leads },
