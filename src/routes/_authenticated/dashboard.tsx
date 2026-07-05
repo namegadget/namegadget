@@ -259,7 +259,7 @@ function Dashboard() {
                       <td className="px-4 py-3.5">
                         <LanderSelect
                           value={d.selected_lander || "afternic"}
-                          onChange={(v) => void updateLander(d.id, v)}
+                          onChange={(v: string) => void updateLander(d.id, v)}
                         />
                       </td>
                       <td className="px-4 py-3.5">
