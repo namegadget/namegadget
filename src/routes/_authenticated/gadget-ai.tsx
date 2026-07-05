@@ -27,10 +27,12 @@ import { OutboundPanel } from "@/components/outbound-panel";
 import { VisitorMap } from "@/components/visitor-map";
 
 export const Route = createFileRoute("/_authenticated/gadget-ai")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    domain: typeof s.domain === "string" ? s.domain : undefined,
-    tab: s.tab === "outbound" || s.tab === "map" ? s.tab : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>) => {
+    const out: { domain?: string; tab?: "outbound" | "map" | "appraisal" } = {};
+    if (typeof s.domain === "string") out.domain = s.domain;
+    if (s.tab === "outbound" || s.tab === "map" || s.tab === "appraisal") out.tab = s.tab;
+    return out;
+  },
   component: GadgetAI,
 });
 
