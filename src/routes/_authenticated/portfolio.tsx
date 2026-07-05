@@ -38,6 +38,8 @@ function PortfolioPage() {
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "expiry", dir: "asc" });
   const [health, setHealth] = useState<Record<string, Health>>({});
   const [refreshing, setRefreshing] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
 
   useEffect(() => { void load(); }, []);
 
