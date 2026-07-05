@@ -966,7 +966,6 @@ function Landing() {
       <section className="relative py-16 md:py-20 border-t border-border">
         <div className="max-w-6xl mx-auto px-6">
           <div className="relative rounded-3xl gradient-brand overflow-hidden p-8 md:p-14 text-primary-foreground">
-            <div className="absolute inset-0 bg-grid opacity-20 pointer-events-none" />
             <div className="relative grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div>
                 <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur px-3 py-1 text-[11px] font-medium mb-4">
