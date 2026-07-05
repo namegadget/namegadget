@@ -216,7 +216,7 @@ function PortfolioPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {list.map((d) => {
+                  {pagedList.map((d) => {
                     const dd = daysUntil(d.expiry_date);
                     const h = health[d.domain_name];
                     return (
