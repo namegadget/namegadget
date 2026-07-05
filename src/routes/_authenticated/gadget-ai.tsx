@@ -160,9 +160,9 @@ function Report({ r, domain }: { r: Appraisal; domain: string }) {
           <div className="text-4xl font-bold my-3 text-foreground">{fmtUSD(r.marketValue)}</div>
           <div className="text-xs text-muted-foreground">{r.algorithm} + Premium</div>
         </div>
-        <div className="rounded-xl border border-violet-500/40 bg-violet-500/5 p-6 text-center">
+        <div className="rounded-xl border border-primary/40 bg-primary/5 p-6 text-center">
           <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Suggested Range</div>
-          <div className="text-4xl font-bold my-3 text-violet-700">
+          <div className="text-4xl font-bold my-3 text-primary">
             {fmtUSD(r.suggestedLow)} – {fmtUSD(r.suggestedHigh)}
           </div>
           <div className="text-xs text-muted-foreground">{r.valueBasis}</div>
