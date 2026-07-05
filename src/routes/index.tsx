@@ -623,7 +623,7 @@ function Landing() {
           <div className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-4">
             {/* Step 01 */}
             <div className="relative">
-              <div className="workflow-card opacity-0 rounded-2xl border border-border bg-card p-6 h-full">
+              <div className="workflow-card rounded-2xl border border-border bg-card p-6 h-full">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[10px] font-mono text-muted-foreground tracking-widest">STEP 01 · ~30s</span>
                   <div className="h-9 w-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
@@ -646,7 +646,7 @@ function Landing() {
 
             {/* Step 02 */}
             <div className="relative">
-              <div className="workflow-card opacity-0 rounded-2xl border border-border bg-card p-6 h-full">
+              <div className="workflow-card rounded-2xl border border-border bg-card p-6 h-full">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[10px] font-mono text-muted-foreground tracking-widest">STEP 02 · ~45s</span>
                   <div className="h-9 w-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
@@ -671,7 +671,7 @@ function Landing() {
 
             {/* Step 03 */}
             <div className="relative">
-              <div className="workflow-card opacity-0 rounded-2xl border border-border bg-card p-6 h-full">
+              <div className="workflow-card rounded-2xl border border-border bg-card p-6 h-full">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[10px] font-mono text-muted-foreground tracking-widest">STEP 03 · live</span>
                   <div className="h-9 w-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
@@ -704,7 +704,7 @@ function Landing() {
 
             {/* Step 04 */}
             <div className="relative">
-              <div className="workflow-card opacity-0 rounded-2xl border border-border bg-card p-6 h-full">
+              <div className="workflow-card rounded-2xl border border-border bg-card p-6 h-full">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[10px] font-mono text-muted-foreground tracking-widest">STEP 04 · 0% fee</span>
                   <div className="h-9 w-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">

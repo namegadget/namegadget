@@ -47,6 +47,8 @@ function Dashboard() {
   const [email, setEmail] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
   const [expiryFilter, setExpiryFilter] = useState<ExpiryFilter>("All");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 25;
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
@@ -104,6 +106,14 @@ function Dashboard() {
       return true;
     });
   }, [domains, query, statusFilter, expiryFilter]);
+
+  useEffect(() => { setPage(1); }, [query, statusFilter, expiryFilter]);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paged = useMemo(
+    () => filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [filtered, currentPage],
+  );
 
   const totalAssets = domains.length;
   const critical = domains.filter((d) => daysUntil(d.expiry_date) < 90).length;
@@ -235,7 +245,7 @@ function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((d) => (
+                  {paged.map((d) => (
                     <tr
                       key={d.id}
                       className="group border-b border-border last:border-0 hover:bg-primary/5 transition"
@@ -280,6 +290,26 @@ function Dashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+          {!loading && filtered.length > PAGE_SIZE && (
+            <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-t border-border bg-muted/20 text-xs">
+              <span className="font-mono text-muted-foreground">
+                {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} of {filtered.length}
+              </span>
+              <div className="inline-flex items-center gap-2">
+                <button
+                  disabled={currentPage <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className="h-8 px-3 rounded-md border border-border bg-card font-mono uppercase tracking-widest text-[10px] hover:border-primary/40 hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed"
+                >Prev</button>
+                <span className="font-mono text-muted-foreground">{currentPage} / {totalPages}</span>
+                <button
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  className="h-8 px-3 rounded-md border border-border bg-card font-mono uppercase tracking-widest text-[10px] hover:border-primary/40 hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed"
+                >Next</button>
+              </div>
             </div>
           )}
         </div>

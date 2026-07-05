@@ -82,6 +82,62 @@
           ]
         },
         "outputSchema": null
+      },
+      {
+        "name": "visitor_stats",
+        "title": "Visitor map data",
+        "description": "Return per-domain visitor counts plus portfolio totals for the signed-in user. Feed for the live visitor map / analytics.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "domain": {
+              "description": "Optional: filter to a single domain name.",
+              "type": "string"
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "find_leads",
+        "title": "Find outbound leads",
+        "description": "Generate a ranked list of potential corporate buyers for a domain. Returns company, website, likely contact email, phone, relevance reason and 0-100 score.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "domain": {
+              "type": "string",
+              "minLength": 3,
+              "description": "Target domain, e.g. quantumleap.ai"
+            },
+            "limit": {
+              "description": "Max leads (default 8).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            },
+            "industry": {
+              "description": "Optional industry hint (fintech, saas, etc.)",
+              "type": "string"
+            }
+          },
+          "required": [
+            "domain"
+          ]
+        },
+        "outputSchema": null
       }
     ]
   }

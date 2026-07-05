@@ -38,6 +38,8 @@ function PortfolioPage() {
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "expiry", dir: "asc" });
   const [health, setHealth] = useState<Record<string, Health>>({});
   const [refreshing, setRefreshing] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
 
   useEffect(() => { void load(); }, []);
 
@@ -109,6 +111,14 @@ function PortfolioPage() {
       }
     });
   }, [domains, q, sort]);
+
+  useEffect(() => { setPage(1); }, [q, sort]);
+  const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedList = useMemo(
+    () => list.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [list, currentPage],
+  );
 
   const totalValue = domains.reduce((s, d) => s + (d.appraised_value ?? 0), 0);
   const totalTraffic = domains.reduce((s, d) => s + d.visitor_count, 0);
@@ -206,7 +216,7 @@ function PortfolioPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {list.map((d) => {
+                  {pagedList.map((d) => {
                     const dd = daysUntil(d.expiry_date);
                     const h = health[d.domain_name];
                     return (
@@ -264,6 +274,26 @@ function PortfolioPage() {
                 </tbody>
               </table>
             </div>
+            {list.length > PAGE_SIZE && (
+              <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-t border-border bg-muted/20 text-xs">
+                <span className="font-mono text-muted-foreground">
+                  {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, list.length)} of {list.length}
+                </span>
+                <div className="inline-flex items-center gap-2">
+                  <button
+                    disabled={currentPage <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="h-8 px-3 rounded-md border border-border bg-card font-mono uppercase tracking-widest text-[10px] hover:border-emerald-500/40 hover:text-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >Prev</button>
+                  <span className="font-mono text-muted-foreground">{currentPage} / {totalPages}</span>
+                  <button
+                    disabled={currentPage >= totalPages}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    className="h-8 px-3 rounded-md border border-border bg-card font-mono uppercase tracking-widest text-[10px] hover:border-emerald-500/40 hover:text-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >Next</button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
