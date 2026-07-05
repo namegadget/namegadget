@@ -125,13 +125,13 @@ function Report({ r, domain }: { r: Appraisal; domain: string }) {
   return (
     <div className="space-y-6">
       {/* Hero card */}
-      <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white p-6 md:p-8">
-        <span className="inline-block px-3 py-1 rounded-full bg-white/15 text-[10px] font-mono uppercase tracking-widest">
+      <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
+        <span className="inline-block px-3 py-1 rounded-full border border-border bg-background text-[10px] font-mono uppercase tracking-widest text-foreground">
           Domain Appraisal
         </span>
-        <h2 className="text-4xl md:text-5xl font-semibold mt-4">{domain}</h2>
-        <p className="text-white/80 mt-2 text-sm md:text-base">{r.meaning}</p>
-        <div className="flex flex-wrap gap-x-6 gap-y-2 mt-5 text-xs text-white/70">
+        <h2 className="text-4xl md:text-5xl font-bold mt-4 text-foreground tracking-tight">{domain}</h2>
+        <p className="text-muted-foreground mt-2 text-sm md:text-base">{r.meaning}</p>
+        <div className="flex flex-wrap gap-x-6 gap-y-2 mt-5 text-xs text-muted-foreground">
           <span>📅 {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}</span>
           <span>📊 {r.algorithm}</span>
           <span>🌐 .{domain.split(".").pop()} TLD</span>
