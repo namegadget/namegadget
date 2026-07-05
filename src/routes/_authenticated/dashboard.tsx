@@ -93,20 +93,16 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="relative overflow-hidden bg-sidebar text-white">
-        <div className="absolute -top-40 -right-40 h-[560px] w-[560px] rounded-full pointer-events-none"
-             style={{ background: "radial-gradient(circle, rgba(4,120,87,0.22) 0%, transparent 65%)" }} />
-        <div className="absolute -bottom-24 left-16 h-[320px] w-[320px] rounded-full pointer-events-none"
-             style={{ background: "radial-gradient(circle, rgba(4,120,87,0.10) 0%, transparent 65%)" }} />
+      <header className="relative overflow-hidden border-b border-border bg-background">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-10 md:pt-14 pb-8 md:pb-10">
-          <div className="inline-flex items-center gap-2.5 text-[11px] uppercase tracking-[0.12em] font-semibold text-primary mb-5">
-            <span className="inline-block w-7 h-px bg-primary" />
-            01 · Dashboard · Management Console
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground mb-5 shadow-sm">
+            <span className="h-5 w-5 rounded-full bg-primary inline-flex items-center justify-center text-primary-foreground text-[10px] font-bold">01</span>
+            <span className="tracking-wide uppercase">Dashboard · Management Console</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight leading-[1.05] max-w-2xl">
-            Welcome back, <strong className="font-bold text-primary break-words">{email.split("@")[0] || "investor"}</strong>.
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.05] max-w-2xl text-foreground">
+            Welcome back, <span className="text-primary break-words">{email.split("@")[0] || "investor"}</span>.
           </h1>
-          <div className="mt-5 flex items-center gap-3 sm:gap-5 flex-wrap text-[11px] font-mono text-white/40">
+          <div className="mt-5 flex items-center gap-3 sm:gap-5 flex-wrap text-[11px] font-mono text-muted-foreground">
             <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> LIVE SYNC</span>
             <span>·</span>
             <span>{totalAssets} assets</span>
