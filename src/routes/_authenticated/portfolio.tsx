@@ -236,17 +236,27 @@ function PortfolioPage() {
                         <td className="px-4 sm:px-5 py-3 text-right font-mono whitespace-nowrap">
                           {d.appraised_value ? `$${d.appraised_value.toLocaleString()}` : "—"}
                         </td>
-                        <td className="px-2 py-3 text-right">
-                          <button
-                            onClick={() => refreshRow(d)}
-                            disabled={refreshing === d.id}
-                            title="Re-fetch registrar, expiry and DNS"
-                            className="h-8 w-8 rounded-md border border-transparent hover:border-border hover:bg-muted inline-flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-50"
-                          >
-                            {refreshing === d.id
-                              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                              : <RefreshCw className="h-3.5 w-3.5" />}
-                          </button>
+                        <td className="px-2 py-3 text-right whitespace-nowrap">
+                          <div className="inline-flex items-center gap-1.5">
+                            <Link
+                              to="/gadget-ai"
+                              search={{ domain: d.domain_name }}
+                              title="Run Gadget+ appraisal on this domain"
+                              className="inline-flex items-center gap-1 h-8 px-2.5 rounded-md border border-primary/30 bg-primary/5 text-primary text-[11px] font-medium hover:bg-primary/10 hover:border-primary/50 transition"
+                            >
+                              <Sparkles className="h-3 w-3" /> Gadget+
+                            </Link>
+                            <button
+                              onClick={() => refreshRow(d)}
+                              disabled={refreshing === d.id}
+                              title="Re-fetch registrar, expiry and DNS"
+                              className="h-8 w-8 rounded-md border border-transparent hover:border-border hover:bg-muted inline-flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-50"
+                            >
+                              {refreshing === d.id
+                                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                : <RefreshCw className="h-3.5 w-3.5" />}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
