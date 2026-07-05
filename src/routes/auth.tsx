@@ -14,6 +14,9 @@ import {
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : undefined,
+  }),
   component: AuthPage,
 });
 
@@ -32,6 +35,8 @@ function GoogleGlyph({ className = "h-5 w-5" }: { className?: string }) {
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
+  const dest = next ?? "/dashboard";
   const [step, setStep] = useState<Step>("identify");
   const [mode, setMode] = useState<"otp" | "password">("otp");
   const [passwordMode, setPasswordMode] = useState<"signin" | "signup">("signin");
@@ -44,13 +49,19 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard", replace: true });
+      if (data.session) {
+        if (next) window.location.href = next;
+        else navigate({ to: "/dashboard", replace: true });
+      }
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (session) navigate({ to: "/dashboard", replace: true });
+      if (session) {
+        if (next) window.location.href = next;
+        else navigate({ to: "/dashboard", replace: true });
+      }
     });
     return () => sub.subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, next]);
 
   // Entrance
   useEffect(() => {
