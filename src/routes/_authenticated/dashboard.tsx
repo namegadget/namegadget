@@ -9,7 +9,7 @@ import {
   RefreshCw, Layers, Wallet, Filter, CircleDot,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { LanderGallery } from "@/components/landers";
+import { LanderGallery, LANDER_TEMPLATES } from "@/components/landers";
 import { enrichDomain, normalizeDomain, type DomainEnrichment } from "@/lib/domain-enrich";
 import { appraiseDomain, analyzeTechProfile, generateLivePulse } from "@/lib/gadget.functions";
 
