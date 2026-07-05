@@ -26,8 +26,6 @@ type Domain = {
   selected_lander: string;
 };
 
-import { LANDER_TEMPLATES } from "@/components/landers";
-
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
