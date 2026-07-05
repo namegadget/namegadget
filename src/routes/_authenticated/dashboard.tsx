@@ -987,7 +987,7 @@ function GadgetView({ domain }: { domain: Domain }) {
         <div className="mt-4 flex items-center gap-3">
           <span className="text-2xl font-black">{data.brandScoreTotal}<span className="text-muted-foreground text-sm">/25</span></span>
           <div className="flex-1 h-2.5 rounded-full bg-muted overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-violet-500 to-sky-500" style={{ width: `${(data.brandScoreTotal / 25) * 100}%` }} />
+            <div className="h-full bg-primary" style={{ width: `${(data.brandScoreTotal / 25) * 100}%` }} />
           </div>
         </div>
       </Card>
