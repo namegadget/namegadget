@@ -51,6 +51,9 @@ function Dashboard() {
   const [expiryFilter, setExpiryFilter] = useState<ExpiryFilter>("All");
   const [page, setPage] = useState(1);
   const [liveState, setLiveState] = useState<"connecting" | "live" | "offline">("connecting");
+  const [editingPrice, setEditingPrice] = useState<string | null>(null);
+  const [priceDraft, setPriceDraft] = useState<string>("");
+  const [savingPrice, setSavingPrice] = useState(false);
   const PAGE_SIZE = 25;
 
   useEffect(() => {
