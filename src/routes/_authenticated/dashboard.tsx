@@ -20,8 +20,9 @@ type Domain = {
   registrar: string;
   expiry_date: string;
   visitor_count: number;
-  status: "Parked" | "For Sale" | "Negotiating" | "Sold";
+  status: string;
   appraised_value: number | null;
+  price: number | null;
   created_at: string;
   selected_lander: string;
 };
