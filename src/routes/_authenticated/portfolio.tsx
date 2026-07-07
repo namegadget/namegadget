@@ -100,6 +100,35 @@ function PortfolioPage() {
     }
   }
 
+  function startEditPrice(d: Domain) {
+    setEditingPrice(d.id);
+    setPriceDraft(d.price != null ? String(d.price) : "");
+  }
+
+  async function savePrice(d: Domain) {
+    const raw = priceDraft.trim();
+    const priceNum = raw === "" ? null : Number(raw);
+    if (priceNum !== null && (!Number.isFinite(priceNum) || priceNum < 0)) {
+      toast.error("Enter a valid price"); return;
+    }
+    setSavingPrice(true);
+    const patch: { price: number | null; status?: string } = { price: priceNum };
+    // Auto-transition status based on price + current status
+    if (priceNum && priceNum > 0) {
+      if (!["Listed", "Pending Payment", "escrow_secured", "Negotiating"].includes(d.status)) {
+        patch.status = "Listed";
+      }
+    } else if (d.status === "Listed") {
+      patch.status = "Parked";
+    }
+    const { error } = await supabase.from("domains").update(patch).eq("id", d.id);
+    setSavingPrice(false);
+    if (error) { toast.error(error.message); return; }
+    setDomains((rows) => rows.map((r) => r.id === d.id ? { ...r, price: priceNum, status: patch.status ?? r.status } : r));
+    setEditingPrice(null);
+    toast.success(priceNum ? `Listed at $${priceNum.toLocaleString()}` : "Price cleared");
+  }
+
   const list = useMemo(() => {
     const filtered = domains.filter((d) =>
       !q ? true : d.domain_name.toLowerCase().includes(q.toLowerCase()) || d.registrar.toLowerCase().includes(q.toLowerCase()),
