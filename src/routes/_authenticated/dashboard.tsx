@@ -291,6 +291,7 @@ function Dashboard() {
                   <tr>
                     <th className="text-left font-medium px-5 py-3">Domain</th>
                     <th className="text-left font-medium px-4 py-3">Visitors</th>
+                    <th className="text-left font-medium px-4 py-3">Price</th>
                     <th className="text-left font-medium px-4 py-3">Expires</th>
                     <th className="text-left font-medium px-4 py-3">Gadget+</th>
                     <th className="text-left font-medium px-4 py-3">Lander</th>
