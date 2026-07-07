@@ -80,7 +80,7 @@ export const Route = createFileRoute("/api/public/webhooks/escrow")({
 
         await supabaseAdmin
           .from("escrow_transactions")
-          .update({ status, raw: payload })
+          .update({ status, raw: payload as never })
           .eq("id", record.id);
 
         // Map Escrow.com status → domain + deal state
