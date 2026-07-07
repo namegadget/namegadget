@@ -32,7 +32,7 @@ export const Route = createFileRoute("/api/public/webhooks/escrow")({
               signature_valid: entry.signature_valid,
               matched_record_id: entry.matched_record_id ?? null,
               error: entry.error ?? null,
-              raw: entry.raw ?? null,
+              raw: (entry.raw ?? null) as never,
               headers,
             });
           } catch { /* swallow — logging must never break the webhook */ }
