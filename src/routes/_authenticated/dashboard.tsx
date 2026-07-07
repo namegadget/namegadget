@@ -6,7 +6,7 @@ import {
   Search, Plus, TrendingUp, AlertTriangle, Users2,
   Sparkles, X, Radio, MessagesSquare, LayoutTemplate, Globe2,
   ShieldCheck, Send, Copy, ExternalLink, Loader2,
-  RefreshCw, Layers, Wallet, Filter, CircleDot,
+  RefreshCw, Layers, Wallet, Filter, CircleDot, Tag, Check,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { LanderGallery, LANDER_TEMPLATES } from "@/components/landers";
