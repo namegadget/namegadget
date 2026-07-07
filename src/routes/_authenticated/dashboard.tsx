@@ -309,6 +309,55 @@ function Dashboard() {
                         <DomainCell name={d.domain_name} />
                       </td>
                       <td className="px-4 py-3.5"><TrafficIndicator count={d.visitor_count} /></td>
+                      <td className="px-4 py-3.5">
+                        {editingPrice === d.id ? (
+                          <div className="inline-flex items-center gap-1">
+                            <span className="text-muted-foreground text-xs">$</span>
+                            <input
+                              autoFocus
+                              type="number"
+                              min={0}
+                              value={priceDraft}
+                              onChange={(e) => setPriceDraft(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") void savePrice(d);
+                                if (e.key === "Escape") setEditingPrice(null);
+                              }}
+                              placeholder="price"
+                              className="w-24 h-7 rounded border border-primary/40 bg-background px-2 text-xs outline-none focus:ring-2 focus:ring-primary/30"
+                            />
+                            <button
+                              disabled={savingPrice}
+                              onClick={() => void savePrice(d)}
+                              title="Save price"
+                              className="h-7 w-7 inline-flex items-center justify-center rounded border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50"
+                            >
+                              {savingPrice ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                            </button>
+                            <button
+                              onClick={() => setEditingPrice(null)}
+                              title="Cancel"
+                              className="h-7 w-7 inline-flex items-center justify-center rounded border border-border text-muted-foreground hover:text-foreground"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => startEditPrice(d)}
+                            title={d.price ? "Edit price" : "Set price to list"}
+                            className="inline-flex items-center gap-1.5 h-7 px-2 rounded-md border border-border bg-muted/40 text-[11px] font-mono hover:border-primary/50 hover:bg-primary/10 hover:text-primary transition"
+                          >
+                            {d.price ? (
+                              <span className="text-foreground">${d.price.toLocaleString()}</span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-muted-foreground">
+                                <Tag className="h-3 w-3" /> Set price
+                              </span>
+                            )}
+                          </button>
+                        )}
+                      </td>
                       <td className="px-4 py-3.5"><CountdownBadge iso={d.expiry_date} /></td>
                       <td className="px-4 py-3.5">
                         <Link
