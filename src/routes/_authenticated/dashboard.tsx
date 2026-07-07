@@ -31,7 +31,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
-type StatusFilter = "All" | Domain["status"];
+type KnownStatus = "Parked" | "For Sale" | "Negotiating" | "Sold";
+type StatusFilter = "All" | KnownStatus;
 type ExpiryFilter = "All" | "critical" | "soon" | "healthy";
 
 function daysUntil(dateStr: string) {
