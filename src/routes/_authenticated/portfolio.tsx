@@ -244,7 +244,8 @@ function PortfolioPage() {
                     <Th onClick={() => toggleSort("expiry")} active={sort.key === "expiry"} dir={sort.dir}>Expiry</Th>
                     <Th onClick={() => toggleSort("traffic")} active={sort.key === "traffic"} dir={sort.dir} align="right">Traffic</Th>
                     <th className="text-left px-4 sm:px-5 py-3">Status</th>
-                    <Th onClick={() => toggleSort("value")} active={sort.key === "value"} dir={sort.dir} align="right">Value</Th>
+                    <th className="text-right px-4 sm:px-5 py-3">Price</th>
+                    <Th onClick={() => toggleSort("value")} active={sort.key === "value"} dir={sort.dir} align="right">Appraisal</Th>
                     <th className="text-right px-4 sm:px-5 py-3 w-16"></th>
                   </tr>
                 </thead>
