@@ -94,8 +94,10 @@ function Dashboard() {
 
   // Live counts (unfiltered) for the KPI + chip badges
   const counts = useMemo(() => {
-    const c: Record<Domain["status"], number> = { Parked: 0, "For Sale": 0, Negotiating: 0, Sold: 0 };
-    for (const d of domains) c[d.status]++;
+    const c: Record<KnownStatus, number> = { Parked: 0, "For Sale": 0, Negotiating: 0, Sold: 0 };
+    for (const d of domains) {
+      if (d.status in c) c[d.status as KnownStatus]++;
+    }
     return c;
   }, [domains]);
 
