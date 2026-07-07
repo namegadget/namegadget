@@ -95,6 +95,34 @@ function Dashboard() {
     else toast.success("Lander updated");
   }
 
+  function startEditPrice(d: Domain) {
+    setEditingPrice(d.id);
+    setPriceDraft(d.price != null ? String(d.price) : "");
+  }
+
+  async function savePrice(d: Domain) {
+    const raw = priceDraft.trim();
+    const priceNum = raw === "" ? null : Number(raw);
+    if (priceNum !== null && (!Number.isFinite(priceNum) || priceNum < 0)) {
+      toast.error("Enter a valid price"); return;
+    }
+    setSavingPrice(true);
+    const patch: { price: number | null; status?: string } = { price: priceNum };
+    if (priceNum && priceNum > 0) {
+      if (!["Listed", "Pending Payment", "escrow_secured", "Negotiating"].includes(d.status)) {
+        patch.status = "Listed";
+      }
+    } else if (d.status === "Listed") {
+      patch.status = "Parked";
+    }
+    const { error } = await supabase.from("domains").update(patch).eq("id", d.id);
+    setSavingPrice(false);
+    if (error) { toast.error(error.message); return; }
+    setDomains((rows) => rows.map((r) => r.id === d.id ? { ...r, price: priceNum, status: patch.status ?? r.status } : r));
+    setEditingPrice(null);
+    toast.success(priceNum ? `Listed at $${priceNum.toLocaleString()}` : "Price cleared");
+  }
+
   // Live counts (unfiltered) for the KPI + chip badges
   const counts = useMemo(() => {
     const c: Record<KnownStatus, number> = { Parked: 0, "For Sale": 0, Negotiating: 0, Sold: 0 };
