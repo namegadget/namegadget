@@ -630,15 +630,17 @@ function parseDomainList(text: string): string[] {
   ));
 }
 
-async function insertEnriched(userId: string, e: DomainEnrichment) {
+async function insertEnriched(userId: string, e: DomainEnrichment, price?: number | null) {
+  const hasPrice = typeof price === "number" && price > 0;
   return supabase.from("domains").insert({
     user_id: userId,
     domain_name: e.domain,
     registrar: e.registrar,
     expiry_date: e.expiryIso,
     visitor_count: e.visitorEstimate,
-    status: "Parked",
+    status: hasPrice ? "Listed" : "Parked",
     appraised_value: null,
+    price: hasPrice ? price : null,
   });
 }
 
