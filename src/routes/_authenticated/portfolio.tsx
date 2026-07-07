@@ -277,7 +277,59 @@ function PortfolioPage() {
                         <td className="px-4 sm:px-5 py-3 whitespace-nowrap">
                           <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-muted">{d.status}</span>
                         </td>
-                        <td className="px-4 sm:px-5 py-3 text-right font-mono whitespace-nowrap">
+                        <td className="px-4 sm:px-5 py-3 text-right whitespace-nowrap">
+                          {editingPrice === d.id ? (
+                            <div className="inline-flex items-center gap-1">
+                              <div className="relative">
+                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">$</span>
+                                <input
+                                  autoFocus
+                                  type="number"
+                                  min={0}
+                                  step={1}
+                                  value={priceDraft}
+                                  onChange={(e) => setPriceDraft(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") void savePrice(d);
+                                    if (e.key === "Escape") setEditingPrice(null);
+                                  }}
+                                  placeholder="price"
+                                  className="w-24 h-8 rounded-md border border-emerald-500/40 bg-background pl-5 pr-2 text-xs font-mono text-right outline-none focus:border-emerald-500"
+                                />
+                              </div>
+                              <button
+                                onClick={() => void savePrice(d)}
+                                disabled={savingPrice}
+                                title="Save price"
+                                className="h-8 w-8 rounded-md border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 inline-flex items-center justify-center hover:bg-emerald-500/20 disabled:opacity-50"
+                              >
+                                {savingPrice ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                              </button>
+                              <button
+                                onClick={() => setEditingPrice(null)}
+                                title="Cancel"
+                                className="h-8 w-8 rounded-md border border-border bg-card text-muted-foreground inline-flex items-center justify-center hover:text-foreground"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => startEditPrice(d)}
+                              title={d.price ? "Edit price" : "Set price to list"}
+                              className="inline-flex items-center gap-1 h-8 px-2.5 rounded-md border border-transparent hover:border-emerald-500/40 hover:bg-emerald-500/5 font-mono text-xs group"
+                            >
+                              {d.price ? (
+                                <span className="text-foreground">${d.price.toLocaleString()}</span>
+                              ) : (
+                                <span className="text-muted-foreground inline-flex items-center gap-1">
+                                  <Tag className="h-3 w-3" /> Set price
+                                </span>
+                              )}
+                            </button>
+                          )}
+                        </td>
+                        <td className="px-4 sm:px-5 py-3 text-right font-mono whitespace-nowrap text-muted-foreground">
                           {d.appraised_value ? `$${d.appraised_value.toLocaleString()}` : "—"}
                         </td>
                         <td className="px-2 py-3 text-right whitespace-nowrap">
