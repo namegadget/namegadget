@@ -649,6 +649,7 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
 
   // Single
   const [domainName, setDomainName] = useState("");
+  const [price, setPrice] = useState<string>("");
   const [enrich, setEnrich] = useState<DomainEnrichment | null>(null);
   const [enriching, setEnriching] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -679,10 +680,14 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
     setSaving(true);
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) { toast.error("Not signed in"); setSaving(false); return; }
-    const { error } = await insertEnriched(userData.user.id, data);
+    const priceNum = price.trim() ? Number(price) : null;
+    if (priceNum !== null && (!Number.isFinite(priceNum) || priceNum < 0)) {
+      toast.error("Enter a valid price"); setSaving(false); return;
+    }
+    const { error } = await insertEnriched(userData.user.id, data, priceNum);
     setSaving(false);
     if (error) { toast.error(error.message); return; }
-    toast.success(`${data.domain} added · ${data.source}`);
+    toast.success(`${data.domain} added${priceNum ? ` · listed at $${priceNum.toLocaleString()}` : ""}`);
     onCreated();
   }
 
