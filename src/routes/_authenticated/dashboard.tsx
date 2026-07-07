@@ -6,7 +6,7 @@ import {
   Search, Plus, TrendingUp, AlertTriangle, Users2,
   Sparkles, X, Radio, MessagesSquare, LayoutTemplate, Globe2,
   ShieldCheck, Send, Copy, ExternalLink, Loader2,
-  RefreshCw, Layers, Wallet, Filter, CircleDot,
+  RefreshCw, Layers, Wallet, Filter, CircleDot, Tag, Check,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { LanderGallery, LANDER_TEMPLATES } from "@/components/landers";
@@ -20,8 +20,9 @@ type Domain = {
   registrar: string;
   expiry_date: string;
   visitor_count: number;
-  status: "Parked" | "For Sale" | "Negotiating" | "Sold";
+  status: string;
   appraised_value: number | null;
+  price: number | null;
   created_at: string;
   selected_lander: string;
 };
@@ -30,7 +31,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
-type StatusFilter = "All" | Domain["status"];
+type KnownStatus = "Parked" | "For Sale" | "Negotiating" | "Sold";
+type StatusFilter = "All" | KnownStatus;
 type ExpiryFilter = "All" | "critical" | "soon" | "healthy";
 
 function daysUntil(dateStr: string) {
@@ -49,6 +51,9 @@ function Dashboard() {
   const [expiryFilter, setExpiryFilter] = useState<ExpiryFilter>("All");
   const [page, setPage] = useState(1);
   const [liveState, setLiveState] = useState<"connecting" | "live" | "offline">("connecting");
+  const [editingPrice, setEditingPrice] = useState<string | null>(null);
+  const [priceDraft, setPriceDraft] = useState<string>("");
+  const [savingPrice, setSavingPrice] = useState(false);
   const PAGE_SIZE = 25;
 
   useEffect(() => {
@@ -90,10 +95,40 @@ function Dashboard() {
     else toast.success("Lander updated");
   }
 
+  function startEditPrice(d: Domain) {
+    setEditingPrice(d.id);
+    setPriceDraft(d.price != null ? String(d.price) : "");
+  }
+
+  async function savePrice(d: Domain) {
+    const raw = priceDraft.trim();
+    const priceNum = raw === "" ? null : Number(raw);
+    if (priceNum !== null && (!Number.isFinite(priceNum) || priceNum < 0)) {
+      toast.error("Enter a valid price"); return;
+    }
+    setSavingPrice(true);
+    const patch: { price: number | null; status?: string } = { price: priceNum };
+    if (priceNum && priceNum > 0) {
+      if (!["Listed", "Pending Payment", "escrow_secured", "Negotiating"].includes(d.status)) {
+        patch.status = "Listed";
+      }
+    } else if (d.status === "Listed") {
+      patch.status = "Parked";
+    }
+    const { error } = await supabase.from("domains").update(patch).eq("id", d.id);
+    setSavingPrice(false);
+    if (error) { toast.error(error.message); return; }
+    setDomains((rows) => rows.map((r) => r.id === d.id ? { ...r, price: priceNum, status: patch.status ?? r.status } : r));
+    setEditingPrice(null);
+    toast.success(priceNum ? `Listed at $${priceNum.toLocaleString()}` : "Price cleared");
+  }
+
   // Live counts (unfiltered) for the KPI + chip badges
   const counts = useMemo(() => {
-    const c: Record<Domain["status"], number> = { Parked: 0, "For Sale": 0, Negotiating: 0, Sold: 0 };
-    for (const d of domains) c[d.status]++;
+    const c: Record<KnownStatus, number> = { Parked: 0, "For Sale": 0, Negotiating: 0, Sold: 0 };
+    for (const d of domains) {
+      if (d.status in c) c[d.status as KnownStatus]++;
+    }
     return c;
   }, [domains]);
 
@@ -256,6 +291,7 @@ function Dashboard() {
                   <tr>
                     <th className="text-left font-medium px-5 py-3">Domain</th>
                     <th className="text-left font-medium px-4 py-3">Visitors</th>
+                    <th className="text-left font-medium px-4 py-3">Price</th>
                     <th className="text-left font-medium px-4 py-3">Expires</th>
                     <th className="text-left font-medium px-4 py-3">Gadget+</th>
                     <th className="text-left font-medium px-4 py-3">Lander</th>
@@ -273,6 +309,55 @@ function Dashboard() {
                         <DomainCell name={d.domain_name} />
                       </td>
                       <td className="px-4 py-3.5"><TrafficIndicator count={d.visitor_count} /></td>
+                      <td className="px-4 py-3.5">
+                        {editingPrice === d.id ? (
+                          <div className="inline-flex items-center gap-1">
+                            <span className="text-muted-foreground text-xs">$</span>
+                            <input
+                              autoFocus
+                              type="number"
+                              min={0}
+                              value={priceDraft}
+                              onChange={(e) => setPriceDraft(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") void savePrice(d);
+                                if (e.key === "Escape") setEditingPrice(null);
+                              }}
+                              placeholder="price"
+                              className="w-24 h-7 rounded border border-primary/40 bg-background px-2 text-xs outline-none focus:ring-2 focus:ring-primary/30"
+                            />
+                            <button
+                              disabled={savingPrice}
+                              onClick={() => void savePrice(d)}
+                              title="Save price"
+                              className="h-7 w-7 inline-flex items-center justify-center rounded border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50"
+                            >
+                              {savingPrice ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                            </button>
+                            <button
+                              onClick={() => setEditingPrice(null)}
+                              title="Cancel"
+                              className="h-7 w-7 inline-flex items-center justify-center rounded border border-border text-muted-foreground hover:text-foreground"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => startEditPrice(d)}
+                            title={d.price ? "Edit price" : "Set price to list"}
+                            className="inline-flex items-center gap-1.5 h-7 px-2 rounded-md border border-border bg-muted/40 text-[11px] font-mono hover:border-primary/50 hover:bg-primary/10 hover:text-primary transition"
+                          >
+                            {d.price ? (
+                              <span className="text-foreground">${d.price.toLocaleString()}</span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-muted-foreground">
+                                <Tag className="h-3 w-3" /> Set price
+                              </span>
+                            )}
+                          </button>
+                        )}
+                      </td>
                       <td className="px-4 py-3.5"><CountdownBadge iso={d.expiry_date} /></td>
                       <td className="px-4 py-3.5">
                         <Link
