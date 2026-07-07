@@ -235,7 +235,7 @@ function PortfolioPage() {
         ) : (
           <div className="rounded-xl border border-border bg-card overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[880px]">
+              <table className="w-full text-sm min-w-[1000px]">
                 <thead className="bg-muted/30 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                   <tr>
                     <Th onClick={() => toggleSort("domain")} active={sort.key === "domain"} dir={sort.dir}>Domain</Th>
