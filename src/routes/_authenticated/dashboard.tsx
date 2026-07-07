@@ -789,6 +789,23 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
               </div>
             )}
 
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Buy-now price (USD) — optional</label>
+              <div className="mt-1 relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                <input
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="e.g. 2500"
+                  className="w-full rounded-md border border-input bg-input/40 pl-7 pr-3 py-2 text-sm font-mono outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">Set a price to list this domain publicly at <code className="font-mono">/d/{"{domain}"}</code>. Leave empty to park it.</p>
+            </div>
+
             <button type="submit" disabled={saving || enriching} className="w-full inline-flex items-center justify-center gap-2 rounded-md gradient-brand text-primary-foreground px-4 py-2.5 text-sm font-semibold glow-cyan disabled:opacity-60">
               {(saving || enriching) && <Loader2 className="h-4 w-4 animate-spin" />}
               {enriching ? "Fetching…" : saving ? "Saving…" : "Add to Portfolio"}
