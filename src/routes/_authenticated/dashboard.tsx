@@ -630,15 +630,17 @@ function parseDomainList(text: string): string[] {
   ));
 }
 
-async function insertEnriched(userId: string, e: DomainEnrichment) {
+async function insertEnriched(userId: string, e: DomainEnrichment, price?: number | null) {
+  const hasPrice = typeof price === "number" && price > 0;
   return supabase.from("domains").insert({
     user_id: userId,
     domain_name: e.domain,
     registrar: e.registrar,
     expiry_date: e.expiryIso,
     visitor_count: e.visitorEstimate,
-    status: "Parked",
+    status: hasPrice ? "Listed" : "Parked",
     appraised_value: null,
+    price: hasPrice ? price : null,
   });
 }
 
@@ -647,6 +649,7 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
 
   // Single
   const [domainName, setDomainName] = useState("");
+  const [price, setPrice] = useState<string>("");
   const [enrich, setEnrich] = useState<DomainEnrichment | null>(null);
   const [enriching, setEnriching] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -677,10 +680,14 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
     setSaving(true);
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) { toast.error("Not signed in"); setSaving(false); return; }
-    const { error } = await insertEnriched(userData.user.id, data);
+    const priceNum = price.trim() ? Number(price) : null;
+    if (priceNum !== null && (!Number.isFinite(priceNum) || priceNum < 0)) {
+      toast.error("Enter a valid price"); setSaving(false); return;
+    }
+    const { error } = await insertEnriched(userData.user.id, data, priceNum);
     setSaving(false);
     if (error) { toast.error(error.message); return; }
-    toast.success(`${data.domain} added · ${data.source}`);
+    toast.success(`${data.domain} added${priceNum ? ` · listed at $${priceNum.toLocaleString()}` : ""}`);
     onCreated();
   }
 
@@ -781,6 +788,23 @@ function AddDomainModal({ onClose, onCreated }: { onClose: () => void; onCreated
                 <p className="text-[11px] text-primary font-mono">{enrich.note}</p>
               </div>
             )}
+
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Buy-now price (USD) — optional</label>
+              <div className="mt-1 relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                <input
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="e.g. 2500"
+                  className="w-full rounded-md border border-input bg-input/40 pl-7 pr-3 py-2 text-sm font-mono outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">Set a price to list this domain publicly at <code className="font-mono">/d/{"{domain}"}</code>. Leave empty to park it.</p>
+            </div>
 
             <button type="submit" disabled={saving || enriching} className="w-full inline-flex items-center justify-center gap-2 rounded-md gradient-brand text-primary-foreground px-4 py-2.5 text-sm font-semibold glow-cyan disabled:opacity-60">
               {(saving || enriching) && <Loader2 className="h-4 w-4 animate-spin" />}

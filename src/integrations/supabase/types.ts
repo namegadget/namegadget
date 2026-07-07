@@ -269,6 +269,42 @@ export type Database = {
           },
         ]
       }
+      escrow_webhook_logs: {
+        Row: {
+          created_at: string
+          error: string | null
+          headers: Json | null
+          id: string
+          matched_record_id: string | null
+          raw: Json | null
+          signature_valid: boolean
+          status: string | null
+          transaction_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          headers?: Json | null
+          id?: string
+          matched_record_id?: string | null
+          raw?: Json | null
+          signature_valid?: boolean
+          status?: string | null
+          transaction_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          headers?: Json | null
+          id?: string
+          matched_record_id?: string | null
+          raw?: Json | null
+          signature_valid?: boolean
+          status?: string | null
+          transaction_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

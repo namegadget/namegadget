@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Globe2, ArrowUpRight, Search, RefreshCw, ArrowUpDown, ShieldCheck,
-  Mail, Radio, Server, Loader2, ExternalLink, Sparkles,
+  Mail, Radio, Server, Loader2, ExternalLink, Sparkles, Tag, Check, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { enrichDomain, type DomainEnrichment } from "@/lib/domain-enrich";
@@ -16,6 +16,7 @@ type Domain = {
   visitor_count: number;
   status: string;
   appraised_value: number | null;
+  price: number | null;
 };
 
 // Client-only enrichment cache — health signals we don't persist.
@@ -38,6 +39,9 @@ function PortfolioPage() {
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "expiry", dir: "asc" });
   const [health, setHealth] = useState<Record<string, Health>>({});
   const [refreshing, setRefreshing] = useState<string | null>(null);
+  const [editingPrice, setEditingPrice] = useState<string | null>(null);
+  const [priceDraft, setPriceDraft] = useState<string>("");
+  const [savingPrice, setSavingPrice] = useState(false);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 20;
 
@@ -94,6 +98,35 @@ function PortfolioPage() {
     } finally {
       setRefreshing(null);
     }
+  }
+
+  function startEditPrice(d: Domain) {
+    setEditingPrice(d.id);
+    setPriceDraft(d.price != null ? String(d.price) : "");
+  }
+
+  async function savePrice(d: Domain) {
+    const raw = priceDraft.trim();
+    const priceNum = raw === "" ? null : Number(raw);
+    if (priceNum !== null && (!Number.isFinite(priceNum) || priceNum < 0)) {
+      toast.error("Enter a valid price"); return;
+    }
+    setSavingPrice(true);
+    const patch: { price: number | null; status?: string } = { price: priceNum };
+    // Auto-transition status based on price + current status
+    if (priceNum && priceNum > 0) {
+      if (!["Listed", "Pending Payment", "escrow_secured", "Negotiating"].includes(d.status)) {
+        patch.status = "Listed";
+      }
+    } else if (d.status === "Listed") {
+      patch.status = "Parked";
+    }
+    const { error } = await supabase.from("domains").update(patch).eq("id", d.id);
+    setSavingPrice(false);
+    if (error) { toast.error(error.message); return; }
+    setDomains((rows) => rows.map((r) => r.id === d.id ? { ...r, price: priceNum, status: patch.status ?? r.status } : r));
+    setEditingPrice(null);
+    toast.success(priceNum ? `Listed at $${priceNum.toLocaleString()}` : "Price cleared");
   }
 
   const list = useMemo(() => {
@@ -202,7 +235,7 @@ function PortfolioPage() {
         ) : (
           <div className="rounded-xl border border-border bg-card overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[880px]">
+              <table className="w-full text-sm min-w-[1000px]">
                 <thead className="bg-muted/30 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                   <tr>
                     <Th onClick={() => toggleSort("domain")} active={sort.key === "domain"} dir={sort.dir}>Domain</Th>
@@ -211,7 +244,8 @@ function PortfolioPage() {
                     <Th onClick={() => toggleSort("expiry")} active={sort.key === "expiry"} dir={sort.dir}>Expiry</Th>
                     <Th onClick={() => toggleSort("traffic")} active={sort.key === "traffic"} dir={sort.dir} align="right">Traffic</Th>
                     <th className="text-left px-4 sm:px-5 py-3">Status</th>
-                    <Th onClick={() => toggleSort("value")} active={sort.key === "value"} dir={sort.dir} align="right">Value</Th>
+                    <th className="text-right px-4 sm:px-5 py-3">Price</th>
+                    <Th onClick={() => toggleSort("value")} active={sort.key === "value"} dir={sort.dir} align="right">Appraisal</Th>
                     <th className="text-right px-4 sm:px-5 py-3 w-16"></th>
                   </tr>
                 </thead>
@@ -243,7 +277,59 @@ function PortfolioPage() {
                         <td className="px-4 sm:px-5 py-3 whitespace-nowrap">
                           <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-muted">{d.status}</span>
                         </td>
-                        <td className="px-4 sm:px-5 py-3 text-right font-mono whitespace-nowrap">
+                        <td className="px-4 sm:px-5 py-3 text-right whitespace-nowrap">
+                          {editingPrice === d.id ? (
+                            <div className="inline-flex items-center gap-1">
+                              <div className="relative">
+                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">$</span>
+                                <input
+                                  autoFocus
+                                  type="number"
+                                  min={0}
+                                  step={1}
+                                  value={priceDraft}
+                                  onChange={(e) => setPriceDraft(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") void savePrice(d);
+                                    if (e.key === "Escape") setEditingPrice(null);
+                                  }}
+                                  placeholder="price"
+                                  className="w-24 h-8 rounded-md border border-emerald-500/40 bg-background pl-5 pr-2 text-xs font-mono text-right outline-none focus:border-emerald-500"
+                                />
+                              </div>
+                              <button
+                                onClick={() => void savePrice(d)}
+                                disabled={savingPrice}
+                                title="Save price"
+                                className="h-8 w-8 rounded-md border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 inline-flex items-center justify-center hover:bg-emerald-500/20 disabled:opacity-50"
+                              >
+                                {savingPrice ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                              </button>
+                              <button
+                                onClick={() => setEditingPrice(null)}
+                                title="Cancel"
+                                className="h-8 w-8 rounded-md border border-border bg-card text-muted-foreground inline-flex items-center justify-center hover:text-foreground"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => startEditPrice(d)}
+                              title={d.price ? "Edit price" : "Set price to list"}
+                              className="inline-flex items-center gap-1 h-8 px-2.5 rounded-md border border-transparent hover:border-emerald-500/40 hover:bg-emerald-500/5 font-mono text-xs group"
+                            >
+                              {d.price ? (
+                                <span className="text-foreground">${d.price.toLocaleString()}</span>
+                              ) : (
+                                <span className="text-muted-foreground inline-flex items-center gap-1">
+                                  <Tag className="h-3 w-3" /> Set price
+                                </span>
+                              )}
+                            </button>
+                          )}
+                        </td>
+                        <td className="px-4 sm:px-5 py-3 text-right font-mono whitespace-nowrap text-muted-foreground">
                           {d.appraised_value ? `$${d.appraised_value.toLocaleString()}` : "—"}
                         </td>
                         <td className="px-2 py-3 text-right whitespace-nowrap">
