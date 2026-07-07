@@ -39,6 +39,9 @@ function PortfolioPage() {
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "expiry", dir: "asc" });
   const [health, setHealth] = useState<Record<string, Health>>({});
   const [refreshing, setRefreshing] = useState<string | null>(null);
+  const [editingPrice, setEditingPrice] = useState<string | null>(null);
+  const [priceDraft, setPriceDraft] = useState<string>("");
+  const [savingPrice, setSavingPrice] = useState(false);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 20;
 
