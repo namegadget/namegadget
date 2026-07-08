@@ -31,7 +31,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
-type KnownStatus = "Parked" | "For Sale" | "Negotiating" | "Sold";
+type KnownStatus = "Parked" | "Listed" | "For Sale" | "Negotiating" | "Pending Payment" | "escrow_secured" | "Sold";
 type StatusFilter = "All" | KnownStatus;
 type ExpiryFilter = "All" | "critical" | "soon" | "healthy";
 
@@ -125,7 +125,7 @@ function Dashboard() {
 
   // Live counts (unfiltered) for the KPI + chip badges
   const counts = useMemo(() => {
-    const c: Record<KnownStatus, number> = { Parked: 0, "For Sale": 0, Negotiating: 0, Sold: 0 };
+    const c: Record<KnownStatus, number> = { Parked: 0, Listed: 0, "For Sale": 0, Negotiating: 0, "Pending Payment": 0, escrow_secured: 0, Sold: 0 };
     for (const d of domains) {
       if (d.status in c) c[d.status as KnownStatus]++;
     }
@@ -160,7 +160,7 @@ function Dashboard() {
   const totalTraffic = domains.reduce((sum, d) => sum + (d.visitor_count || 0), 0);
   const totalValue = domains.reduce((sum, d) => sum + (d.appraised_value ?? 0), 0);
   const soldCount = counts.Sold;
-  const forSaleCount = counts["For Sale"] + counts.Negotiating;
+  const forSaleCount = counts["For Sale"] + counts.Negotiating + counts.Listed + counts["Pending Payment"] + counts.escrow_secured;
 
   const activeFilterCount = (statusFilter !== "All" ? 1 : 0) + (expiryFilter !== "All" ? 1 : 0);
 
@@ -266,8 +266,10 @@ function Dashboard() {
             <FilterGroup label="Status">
               <Chip active={statusFilter === "All"} onClick={() => setStatusFilter("All")}>All <span className="opacity-50">· {totalAssets}</span></Chip>
               <Chip active={statusFilter === "Parked"} onClick={() => setStatusFilter("Parked")} tone="muted">Parked <span className="opacity-60">· {counts.Parked}</span></Chip>
+              <Chip active={statusFilter === "Listed"} onClick={() => setStatusFilter("Listed")} tone="primary">Listed <span className="opacity-60">· {counts.Listed}</span></Chip>
               <Chip active={statusFilter === "For Sale"} onClick={() => setStatusFilter("For Sale")} tone="primary">For Sale <span className="opacity-60">· {counts["For Sale"]}</span></Chip>
               <Chip active={statusFilter === "Negotiating"} onClick={() => setStatusFilter("Negotiating")} tone="warning">Negotiating <span className="opacity-60">· {counts.Negotiating}</span></Chip>
+              <Chip active={statusFilter === "Pending Payment"} onClick={() => setStatusFilter("Pending Payment")} tone="warning">Pending <span className="opacity-60">· {counts["Pending Payment"] + counts.escrow_secured}</span></Chip>
               <Chip active={statusFilter === "Sold"} onClick={() => setStatusFilter("Sold")} tone="success">Sold <span className="opacity-60">· {counts.Sold}</span></Chip>
             </FilterGroup>
             <FilterGroup label="Expiry">
