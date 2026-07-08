@@ -160,7 +160,7 @@ function Dashboard() {
   const totalTraffic = domains.reduce((sum, d) => sum + (d.visitor_count || 0), 0);
   const totalValue = domains.reduce((sum, d) => sum + (d.appraised_value ?? 0), 0);
   const soldCount = counts.Sold;
-  const forSaleCount = counts["For Sale"] + counts.Negotiating;
+  const forSaleCount = counts["For Sale"] + counts.Negotiating + counts.Listed + counts["Pending Payment"] + counts.escrow_secured;
 
   const activeFilterCount = (statusFilter !== "All" ? 1 : 0) + (expiryFilter !== "All" ? 1 : 0);
 
