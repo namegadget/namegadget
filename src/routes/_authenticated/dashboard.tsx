@@ -266,8 +266,10 @@ function Dashboard() {
             <FilterGroup label="Status">
               <Chip active={statusFilter === "All"} onClick={() => setStatusFilter("All")}>All <span className="opacity-50">· {totalAssets}</span></Chip>
               <Chip active={statusFilter === "Parked"} onClick={() => setStatusFilter("Parked")} tone="muted">Parked <span className="opacity-60">· {counts.Parked}</span></Chip>
+              <Chip active={statusFilter === "Listed"} onClick={() => setStatusFilter("Listed")} tone="primary">Listed <span className="opacity-60">· {counts.Listed}</span></Chip>
               <Chip active={statusFilter === "For Sale"} onClick={() => setStatusFilter("For Sale")} tone="primary">For Sale <span className="opacity-60">· {counts["For Sale"]}</span></Chip>
               <Chip active={statusFilter === "Negotiating"} onClick={() => setStatusFilter("Negotiating")} tone="warning">Negotiating <span className="opacity-60">· {counts.Negotiating}</span></Chip>
+              <Chip active={statusFilter === "Pending Payment"} onClick={() => setStatusFilter("Pending Payment")} tone="warning">Pending <span className="opacity-60">· {counts["Pending Payment"] + counts.escrow_secured}</span></Chip>
               <Chip active={statusFilter === "Sold"} onClick={() => setStatusFilter("Sold")} tone="success">Sold <span className="opacity-60">· {counts.Sold}</span></Chip>
             </FilterGroup>
             <FilterGroup label="Expiry">
