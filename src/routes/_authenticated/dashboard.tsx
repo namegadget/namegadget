@@ -31,7 +31,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
-type KnownStatus = "Parked" | "For Sale" | "Negotiating" | "Sold";
+type KnownStatus = "Parked" | "Listed" | "For Sale" | "Negotiating" | "Pending Payment" | "escrow_secured" | "Sold";
 type StatusFilter = "All" | KnownStatus;
 type ExpiryFilter = "All" | "critical" | "soon" | "healthy";
 
