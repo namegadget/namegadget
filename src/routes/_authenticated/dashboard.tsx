@@ -135,7 +135,11 @@ function Dashboard() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return domains.filter((d) => {
-      if (statusFilter !== "All" && d.status !== statusFilter) return false;
+      if (statusFilter !== "All") {
+        if (statusFilter === "Pending Payment") {
+          if (d.status !== "Pending Payment" && d.status !== "escrow_secured") return false;
+        } else if (d.status !== statusFilter) return false;
+      }
       if (expiryFilter !== "All") {
         const dd = daysUntil(d.expiry_date);
         if (expiryFilter === "critical" && dd >= 30) return false;
